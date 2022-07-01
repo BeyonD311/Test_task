@@ -1,0 +1,2 @@
+SHELL=/bin/sh
+*/1 * * * * php /var/www/artisan schedule:run >> /var/log/cron.log 2>&1

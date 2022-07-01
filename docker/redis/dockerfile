@@ -1,0 +1,4 @@
+FROM redis:4-alpine3.11
+COPY ./redis.conf /usr/local/etc/redis/redis.conf
+COPY ./test.txt /opt
+CMD [ "redis-server", "/usr/local/etc/redis/redis.conf" ]
