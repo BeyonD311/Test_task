@@ -29,6 +29,7 @@ final class LastUpdateDatabase
             $last->save();
         }else {
             ModelLastUpdate::create([
+                'server_connection_id' => 0,
                 'database_connection_id' => $connection_id,
                 'update' => $time
             ]);

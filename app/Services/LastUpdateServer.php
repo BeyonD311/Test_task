@@ -24,6 +24,7 @@ class LastUpdateServer
     public static function updateOrCreate(int $server_id, int $time): void
     {
         $last = ModelLastUpdate::where('server_connection_id', '=', $server_id)->first();
+        date_default_timezone_set('UTC');
         $date = date('Y-m-d H:i:s', $time);
         if(isset($last)) {
             $last->update = $date;

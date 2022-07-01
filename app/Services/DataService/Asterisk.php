@@ -25,8 +25,9 @@ class Asterisk implements DataServices
         $db = app('db');
         $driver = new Driver($this->db);
         $driver->setDriver('asterisk', 'mysql','asteriskcdrdb');
-        $date = date('Y-m-d', LastUpdateDatabase::getTime($this->db->getId()));
-        $items = $db->connection($driver->getConfig())->table('cdr')->where('calldate', '>', $date)
+        $date = date('Y-m-d H:i:s', LastUpdateDatabase::getTime($this->db->getId()));
+        $items = $db->connection($driver->getConfig())->table('cdr')
+            ->where('calldate', '>', $date)
             ->orderBy('calldate', 'desc')
             ->get();
         return $items->toArray();
