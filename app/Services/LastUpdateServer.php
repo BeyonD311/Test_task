@@ -24,18 +24,15 @@ class LastUpdateServer
     public static function updateOrCreate(int $server_id, int $time): void
     {
         $last = ModelLastUpdate::where('server_connection_id', '=', $server_id)->first();
-        date_default_timezone_set('UTC');
-        $date = date('d-m-Y H:i:s', $time);
-        Log::info($date);
-        Log::info(strtotime($date));
+        $time = date('Y-m-d H:i:s', strtotime($time));
         if(isset($last)) {
-            $last->update = '2022-01-01';
+            $last->update = $time;
             $last->save();
         } else {
             ModelLastUpdate::create([
                 'server_connection_id' => $server_id,
                 'database_connection_id' => 0,
-                'update' => '2022-01-01'
+                'update' => $time
             ]);
         }
     }

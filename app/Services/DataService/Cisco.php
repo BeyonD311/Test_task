@@ -41,8 +41,10 @@ class Cisco implements DataServices
                 $maxDate = $item['sessionStartDate'];
             }
         }
+        $maxDate /= 1000;
+        $date = new DateTime("@$maxDate");
         Log::info(json_encode($this->getItems(), JSON_PRETTY_PRINT));
-        LastUpdateServer::updateOrCreate($this->server->getId(), (int)$maxDate);
+        LastUpdateServer::updateOrCreate($this->server->getId(), $date->format('Y-m-d H:i:s'));
     }
 
     private function sigIn(): void
@@ -78,7 +80,7 @@ class Cisco implements DataServices
     private function getItems(): \Generator
     {
         $lastDate = LastUpdateServer::getTime($this->server->getId());
-        $next = $lastDate + 3600;
+
         $itemsQuery = $this->rest->send('post', 'queryService/query/getSessions', [
             "json" => [
                 "requestParameters" => [
@@ -106,7 +108,7 @@ class Cisco implements DataServices
                         "fieldConditions" => [
                             [
                                 "fieldOperator" => "between",
-                                "fieldValues" => [1641009720000,1672459379000]
+                                "fieldValues" => [strtotime($lastDate)]
                             ]
                         ]
                     ]
