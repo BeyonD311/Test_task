@@ -26,14 +26,16 @@ class LastUpdateServer
         $last = ModelLastUpdate::where('server_connection_id', '=', $server_id)->first();
         date_default_timezone_set('UTC');
         $date = date('d-m-Y H:i:s', $time);
+        Log::info($date);
+        Log::info(strtotime($date));
         if(isset($last)) {
-            $last->update = $date;
+            $last->update = '2022-01-01';
             $last->save();
         } else {
             ModelLastUpdate::create([
                 'server_connection_id' => $server_id,
                 'database_connection_id' => 0,
-                'update' => date('2022-01-01')
+                'update' => '2022-01-01'
             ]);
         }
     }
