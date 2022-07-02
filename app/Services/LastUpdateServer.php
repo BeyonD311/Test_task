@@ -21,7 +21,7 @@ class LastUpdateServer
         return strtotime($last->update);
     }
 
-    public static function updateOrCreate(int $server_id, int $time): void
+    public static function updateOrCreate(int $server_id, string $time): void
     {
         $last = ModelLastUpdate::where('server_connection_id', '=', $server_id)->first();
         $time = date('Y-m-d H:i:s', strtotime($time));
