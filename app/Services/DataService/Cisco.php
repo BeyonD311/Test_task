@@ -108,7 +108,7 @@ class Cisco implements DataServices
                         "fieldConditions" => [
                             [
                                 "fieldOperator" => "between",
-                                "fieldValues" => [strtotime($lastDate)]
+                                "fieldValues" => [strtotime($lastDate), time()]
                             ]
                         ]
                     ]
