@@ -41,8 +41,9 @@ class Cisco implements DataServices
                 $maxDate = $item['sessionStartDate'];
             }
         }
+        $maxDate /= 1000;
         Log::info(json_encode($this->getItems(), JSON_PRETTY_PRINT));
-        LastUpdateServer::updateOrCreate($this->server->getId(), (int)$maxDate);
+        LastUpdateServer::updateOrCreate($this->server->getId(), date('Y-m-d H:i:s', $maxDate));
     }
 
     private function sigIn(): void
