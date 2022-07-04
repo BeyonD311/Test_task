@@ -7,7 +7,6 @@ use App\Interfaces\DataServices;
 use App\Services\Connections\Rest;
 use App\Services\Hosts\Host;
 use App\Services\LastUpdateServer;
-use GuzzleHttp\RequestOptions;
 use Illuminate\Support\Facades\Log;
 
 class Cisco implements DataServices

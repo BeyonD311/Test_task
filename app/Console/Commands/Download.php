@@ -2,13 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Interfaces\Host;
 use App\Jobs\DownloadJob;
 use App\Models\Connections;
-use App\Models\DatabaseConnections;
-use App\Services\Hosts\DB;
-use App\Services\Hosts\Server;
-use App\Models\ServerConnections;
 use Illuminate\Console\Command;
 
 class Download extends Command

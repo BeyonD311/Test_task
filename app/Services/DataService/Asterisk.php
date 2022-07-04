@@ -7,8 +7,6 @@ use App\Services\Connections\Scp;
 use App\Services\Driver;
 use App\Services\Hosts\Host;
 use App\Services\LastUpdateDatabase;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Log;
 
 class Asterisk implements DataServices
 {
@@ -54,6 +52,7 @@ class Asterisk implements DataServices
     {
         $name = preg_replace("/\.[0-9a-z]+$/", "", $item->recordingfile);
         $result = [
+            "service" => 'asterisk',
             "calldate" => $item->calldate,
             "src" => $item->src,
             "dst" => $item->dst,

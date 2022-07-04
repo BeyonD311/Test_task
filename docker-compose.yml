@@ -14,6 +14,8 @@ services:
             - ./docker/php/cron.d:/etc/cron.d
             - /etc/timezone:/etc/timezone:ro
             - /etc/localtime:/etc/localtime:ro
+            #- ${PUBLIC_DIR_AUDIO}:/var/www/storage/audio
+            #- ${PUBLIC_DIR_CALL_INFO}:/var/www/storage/callInfo
         depends_on:
             - db
             - redis
@@ -44,8 +46,8 @@ services:
         volumes:
             - ./mysql-custom-data:/var/lib/mysql
         environment:
-            MYSQL_DATABASE: connection
-            MYSQL_ROOT_PASSWORD: "L7W729rqIhsZnY0C"
+            MYSQL_DATABASE: ${DB_DATABASE}
+            MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
             MYSQL_USER: connection
             MYSQL_PASSWORD: "qy2to1dN"
         networks:
@@ -59,33 +61,9 @@ services:
             - "6388:6379"
         networks:
             - connection
-#    swagger-ui:
-#        image: swaggerapi/swagger-ui
-#        container_name: "connection-swagger-ui"
-#        ports:
-#            - "8072:8080"
-#        volumes:
-#            - ./swagger.json:/openapi.json
-#        environment:
-#            SWAGGER_JSON: /openapi.json
-#        networks:
-#            - connection
 volumes:
     dbdata:
         driver: local
-
-    data-storage:
-        driver: local
-        driver_opts:
-            o: bind
-            type: none
-            device: ./storage/app/audio
-    data-transcription:
-        driver: local
-        driver_opts:
-            o: bind
-            type: none
-            device: ./storage/app/transcription
 networks:
     connection:
         driver: bridge

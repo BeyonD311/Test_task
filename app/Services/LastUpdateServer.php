@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\LastUpdate as ModelLastUpdate;
-use Illuminate\Support\Facades\Log;
 
 class LastUpdateServer
 {
