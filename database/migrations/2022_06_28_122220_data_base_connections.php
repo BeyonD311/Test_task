@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('pass');
             $table->boolean('availability');
             $table->string('table');
-            $table->json('error')->nullable()->default(null);
+            $table->json('error')->default(null);
             $table->timestamps();
             $table->foreign('connection_id')
                 ->references('id')

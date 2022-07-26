@@ -149,9 +149,42 @@ class Cisco implements DataServices
     private function saveJson(array $item)
     {
         $result = [
+            'service' => 'cisco',
             'calldate' => date('Y-m-d H:i:s', $item["sessionStartDate"]),
             'duration' => round($item['duration'] / 1000),
+            'uniqueid' => $item['sessionId'],
+            'did' => round($item['duration'] / 1000)
         ];
+        $result = array_merge($result, $this->generatePhone($item['tracks']));
         file_put_contents('/var/www/storage/callInfo/'.md5($item['urls']['wavUrl']).".json", print_r(json_encode($result, JSON_PRETTY_PRINT), true));
+    }
+
+    /**
+     * Функция генерирует массив с данными:
+     * * кто звонил dst
+     * * куда src
+     * @param array $tracks массив tracks содержится в ответе
+     * @return array
+     */
+    private function generatePhone(array $tracks): array
+    {
+        $result = [];
+        foreach ($tracks as $track) {
+            $participants = $track["participants"][0];
+            if(isset($participants['deviceId'])) {
+                switch ($participants['deviceId']) {
+                    case "mediasenseTrunk":
+                        $result["src"] = $participants['deviceRef'];
+                    break;
+                    default:
+                        $result["dst"] = $participants['deviceRef'];
+                    break;
+                }
+            } else {
+                $result["dst"] = $participants['deviceRef'];
+                $result["src"] = null;
+            }
+        }
+        return $result;
     }
 }
