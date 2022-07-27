@@ -7,17 +7,17 @@ use App\Services\Connections\Scp;
 use App\Services\Driver;
 use App\Services\Hosts\Host;
 use App\Services\LastUpdateDatabase;
+use Illuminate\Support\Facades\Log;
 
 class Asterisk implements DataServices
 {
-    protected static string $path;
+    const path = "/var/spool/asterisk/monitor/";
 
     public function __construct(
         protected Host $server,
         protected Host $db
     )
     {
-        self::$path = env('ENV');
     }
 
     private function getItems(): array
