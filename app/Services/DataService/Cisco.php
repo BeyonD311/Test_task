@@ -30,6 +30,10 @@ class Cisco implements DataServices
         $duration = 0;
         $maxDate = LastUpdateServer::getTime($this->server->getId());
         foreach ($this->getItems() as $item) {
+            if(empty($item['urls']['wavUrl'])) {
+                Log::error(json_encode($item, JSON_PRETTY_PRINT));
+                continue;
+            }
             $this->fileDownload($item);
             foreach ($item['tracks'] as $track) {
                 $duration += $track['trackDuration'];
@@ -41,7 +45,6 @@ class Cisco implements DataServices
             }
         }
         $maxDate /= 1000;
-        Log::info(json_encode($this->getItems(), JSON_PRETTY_PRINT));
         LastUpdateServer::updateOrCreate($this->server->getId(), date('Y-m-d H:i:s', $maxDate));
     }
 
@@ -150,7 +153,7 @@ class Cisco implements DataServices
     {
         $result = [
             'service' => 'cisco',
-            'calldate' => date('Y-m-d H:i:s', $item["sessionStartDate"]),
+            'calldate' => date('Y-m-d H:i:s', ($item["sessionStartDate"] / 1000)),
             'duration' => round($item['duration'] / 1000),
             'uniqueid' => $item['sessionId'],
             'did' => round($item['duration'] / 1000)
