@@ -10,13 +10,15 @@ use App\Services\LastUpdateDatabase;
 
 class Asterisk implements DataServices
 {
-    const path = "/var/spool/asterisk/monitor/";
+    protected static string $path;
 
     public function __construct(
         protected Host $server,
         protected Host $db
     )
-    {}
+    {
+        self::$path = env('ENV');
+    }
 
     private function getItems(): array
     {
