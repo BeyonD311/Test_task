@@ -2,22 +2,24 @@
 
 namespace App\Services\DataService;
 
-use App\Interfaces\DataServices;
 use App\Services\Connections\Scp;
 use App\Services\Driver;
 use App\Services\Hosts\Host;
 use App\Services\LastUpdateDatabase;
 use Illuminate\Support\Facades\Log;
 
-class Asterisk implements DataServices
+class Asterisk extends DataService
 {
     const path = "/var/spool/asterisk/monitor/";
+
+    protected string $lastUpdateConnection = "database_connection_id";
 
     public function __construct(
         protected Host $server,
         protected Host $db
     )
     {
+        parent::__construct();
     }
 
     private function getItems(): array
@@ -25,7 +27,7 @@ class Asterisk implements DataServices
         $db = app('db');
         $driver = new Driver($this->db);
         $driver->setDriver('asterisk', 'mysql','asteriskcdrdb');
-        $date = date('Y-m-d H:i:s', LastUpdateDatabase::getTime($this->db->getId()));
+        $date = date('Y-m-d H:i:s', $this->getInstanceLastUpdate()->getTimestamp($this->db->getId()));
         $items = $db->connection($driver->getConfig())->table('cdr')
             ->where('calldate', '>', $date)
             ->orderBy('calldate', 'desc')
@@ -38,7 +40,7 @@ class Asterisk implements DataServices
         $scp = new Scp($this->server, 'audio');
         $items = $this->getItems();
         if(!empty($items)) {
-            LastUpdateDatabase::updateOrCreate($this->db->getId(), $items[0]->calldate);
+            $this->getInstanceLastUpdate()->updateOrCreate($this->db->getId(), $items[0]->calldate);
         }
         foreach ($items as $item) {
             if($item->recordingfile != "") {

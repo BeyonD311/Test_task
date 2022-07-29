@@ -9,7 +9,7 @@ use App\Services\Hosts\Host;
 use App\Services\LastUpdateServer;
 use Illuminate\Support\Facades\Log;
 
-class Cisco implements DataServices
+class Cisco extends DataService
 {
     private Rest $rest;
 
@@ -17,18 +17,21 @@ class Cisco implements DataServices
         'JSESSIONID' => NULL
     ];
 
+    protected string $lastUpdateConnection = "server_connection_id";
+
     public function __construct(
         protected Host $server
     )
     {
         $this->rest = new Rest('https://'.$this->server->getHost().':'.$this->server->getPort().'/ora/');
+        parent::__construct();
     }
 
     public function download()
     {
         $this->sigIn();
         $duration = 0;
-        $maxDate = LastUpdateServer::getTime($this->server->getId());
+        $maxDate = $this->getInstanceLastUpdate()->getTimestamp($this->server->getId());
         foreach ($this->getItems() as $item) {
             if(empty($item['urls']['wavUrl'])) {
                 Log::error(json_encode($item, JSON_PRETTY_PRINT));
@@ -45,7 +48,7 @@ class Cisco implements DataServices
             }
         }
         $maxDate /= 1000;
-        LastUpdateServer::updateOrCreate($this->server->getId(), date('Y-m-d H:i:s', $maxDate));
+        $this->getInstanceLastUpdate()->updateOrCreate($this->server->getId(), date('Y-m-d H:i:s', $maxDate));
     }
 
     private function sigIn(): void
@@ -80,7 +83,7 @@ class Cisco implements DataServices
 
     private function getItems(): \Generator
     {
-        $lastDate = LastUpdateServer::getTime($this->server->getId());
+        $lastDate = $this->getInstanceLastUpdate()->getTimestamp($this->server->getId());
 
         $itemsQuery = $this->rest->send('post', 'queryService/query/getSessions', [
             "json" => [

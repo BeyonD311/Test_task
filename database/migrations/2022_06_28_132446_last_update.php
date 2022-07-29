@@ -15,8 +15,8 @@ return new class extends Migration
     {
         Schema::create('last_update', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('database_connection_id');
-            $table->unsignedBigInteger('server_connection_id');
+            $table->unsignedBigInteger('database_connection_id')->default(0);
+            $table->unsignedBigInteger('server_connection_id')->default(0);
             $table->timestamp('update');
             $table->index('id');
         });
