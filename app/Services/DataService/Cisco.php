@@ -3,11 +3,8 @@
 namespace App\Services\DataService;
 
 use App\Exceptions\Connection;
-use App\Interfaces\DataServices;
 use App\Services\Connections\Rest;
 use App\Services\Hosts\Host;
-use App\Services\LastUpdateServer;
-use Illuminate\Support\Facades\Log;
 
 class Cisco extends DataService
 {
@@ -34,7 +31,6 @@ class Cisco extends DataService
         $maxDate = $this->getInstanceLastUpdate()->getTimestamp($this->server->getId());
         foreach ($this->getItems() as $item) {
             if(empty($item['urls']['wavUrl'])) {
-                Log::error(json_encode($item, JSON_PRETTY_PRINT));
                 continue;
             }
             $this->fileDownload($item);
@@ -175,21 +171,16 @@ class Cisco extends DataService
     private function generatePhone(array $tracks): array
     {
         $result = [];
-        foreach ($tracks as $track) {
-            $participants = $track["participants"][0];
-            if(isset($participants['deviceId'])) {
-                switch ($participants['deviceId']) {
-                    case "mediasenseTrunk":
-                        $result["src"] = $participants['deviceRef'];
-                    break;
-                    default:
-                        $result["dst"] = $participants['deviceRef'];
-                    break;
-                }
-            } else {
-                $result["dst"] = $participants['deviceRef'];
-                $result["src"] = null;
-            }
+        /**
+         * Индекс 0 - куда звонит
+         * Индекс 1 - кто звонит
+         */
+        if(count($tracks) > 1) {
+            $result["src"] = $tracks[1]["participants"][0]['deviceRef'];
+            $result["dst"] = $tracks[0]["participants"][0]['deviceRef'];
+        } else {
+            $result["src"] = $tracks[0]["participants"][0]['deviceRef'];
+            $result["dst"] = null;
         }
         return $result;
     }

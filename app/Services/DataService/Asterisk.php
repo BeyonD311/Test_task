@@ -5,8 +5,6 @@ namespace App\Services\DataService;
 use App\Services\Connections\Scp;
 use App\Services\Driver;
 use App\Services\Hosts\Host;
-use App\Services\LastUpdateDatabase;
-use Illuminate\Support\Facades\Log;
 
 class Asterisk extends DataService
 {
