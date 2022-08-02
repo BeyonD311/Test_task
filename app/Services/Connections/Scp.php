@@ -3,10 +3,13 @@
 namespace App\Services\Connections;
 
 use App\Interfaces\Host;
+use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
 class Scp
 {
+    use SerializesModels;
+    
     const download = "/var/www/storage/";
 
     protected string $pathDownload;

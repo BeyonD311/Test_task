@@ -5,9 +5,12 @@ namespace App\Services\DataService;
 use App\Exceptions\Connection;
 use App\Interfaces\DataServices;
 use App\Interfaces\LastUpdate;
+use Illuminate\Queue\SerializesModels;
 
 class DataService implements DataServices
 {
+    use SerializesModels;
+
     /**
      * @var string $lastUpdateConnection
      * * служит для определения сервиса соединения

@@ -5,6 +5,7 @@ Homestead.yaml
 .env
 .phpunit.result.cache
 mysql-custom-data
+redis-data
 supervisord.pid
 supervisord.log
 .ssh

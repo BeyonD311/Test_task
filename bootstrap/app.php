@@ -119,5 +119,5 @@ $app->configure('filesystems');
 if (!class_exists('Storage')) class_alias('Illuminate\Support\Facades\Storage', 'Storage');
 
 $app->register(Illuminate\Filesystem\FilesystemServiceProvider::class);
-
+$app->register(Illuminate\Redis\RedisServiceProvider::class);
 return $app;

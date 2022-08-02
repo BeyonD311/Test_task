@@ -13,7 +13,8 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        "App\Console\Commands\Download"
+        "App\Console\Commands\Download",
+        "App\Console\Commands\FileDownload"
     ];
 
     /**
@@ -24,6 +25,6 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('download')->everyFiveMinutes();
+//        $schedule->command('download')->everyFiveMinutes();
     }
 }

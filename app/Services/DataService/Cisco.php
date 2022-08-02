@@ -5,6 +5,7 @@ namespace App\Services\DataService;
 use App\Exceptions\Connection;
 use App\Services\Connections\Rest;
 use App\Services\Hosts\Host;
+use Illuminate\Support\Facades\Artisan;
 
 class Cisco extends DataService
 {
@@ -33,15 +34,15 @@ class Cisco extends DataService
             if(empty($item['urls']['wavUrl'])) {
                 continue;
             }
-            $this->fileDownload($item);
             foreach ($item['tracks'] as $track) {
                 $duration += $track['trackDuration'];
             }
             $item['duration'] = $duration;
-            $this->saveJson($item);
             if($maxDate < $item['sessionStartDate']) {
                 $maxDate = $item['sessionStartDate'];
             }
+
+            $this->fileDownload($item);
         }
         $maxDate /= 1000;
         $this->getInstanceLastUpdate()->updateOrCreate($this->server->getId(), date('Y-m-d H:i:s', $maxDate));
@@ -127,7 +128,7 @@ class Cisco extends DataService
 
     private function fileDownload(array $item)
     {
-        $context = stream_context_create([
+        $context = [
             'http' => [
                 'method' => 'GET',
                 'header' => [
@@ -141,47 +142,11 @@ class Cisco extends DataService
                 'verify_peer_name' => false,
                 'allow_self_signed' => true
             ]
-        ]);
-        $getFile = file_get_contents($item['urls']['wavUrl'], context: $context);
-        $fileName = md5($item['urls']['wavUrl']);
-        $path = '/var/www/storage/audio/'.$fileName.".wav";
-        file_put_contents($path, print_r($getFile, true));
-    }
-
-    private function saveJson(array $item)
-    {
-        $result = [
-            'service' => 'cisco',
-            'calldate' => date('Y-m-d H:i:s', ($item["sessionStartDate"] / 1000)),
-            'duration' => round($item['duration'] / 1000),
-            'uniqueid' => $item['sessionId'],
-            'did' => round($item['duration'] / 1000)
         ];
-        $result = array_merge($result, $this->generatePhone($item['tracks']));
-        file_put_contents('/var/www/storage/callInfo/'.md5($item['urls']['wavUrl']).".json", print_r(json_encode($result, JSON_PRETTY_PRINT), true));
-    }
-
-    /**
-     * Функция генерирует массив с данными:
-     * * кто звонил dst
-     * * куда src
-     * @param array $tracks массив tracks содержится в ответе
-     * @return array
-     */
-    private function generatePhone(array $tracks): array
-    {
-        $result = [];
-        /**
-         * Индекс 0 - куда звонит
-         * Индекс 1 - кто звонит
-         */
-        if(count($tracks) > 1) {
-            $result["src"] = $tracks[1]["participants"][0]['deviceRef'];
-            $result["dst"] = $tracks[0]["participants"][0]['deviceRef'];
-        } else {
-            $result["src"] = $tracks[0]["participants"][0]['deviceRef'];
-            $result["dst"] = null;
-        }
-        return $result;
+        Artisan::call('file', [
+            'connections' => $context,
+            'item' => $item,
+            'type' => "Cisco"
+        ]);
     }
 }

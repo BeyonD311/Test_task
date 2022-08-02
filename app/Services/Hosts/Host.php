@@ -3,8 +3,12 @@
 namespace App\Services\Hosts;
 
 
+use Illuminate\Queue\SerializesModels;
+
 abstract class Host implements \App\Interfaces\Host
 {
+    use SerializesModels;
+
     protected string $_host;
     protected int $_port;
     protected string $_login;

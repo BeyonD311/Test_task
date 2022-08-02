@@ -5,6 +5,8 @@ namespace App\Services\DataService;
 use App\Services\Connections\Scp;
 use App\Services\Driver;
 use App\Services\Hosts\Host;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
 
 class Asterisk extends DataService
 {
@@ -43,9 +45,12 @@ class Asterisk extends DataService
         foreach ($items as $item) {
             if($item->recordingfile != "") {
                 $path = self::path.date("Y/m/d", strtotime($item->calldate)). "/".$item->recordingfile;
-                $this->saveFileInfo($item);
-                $scp->setPathDownload($path)
-                    ->download();
+                $scp->setPathDownload($path);
+                Artisan::call('file', [
+                    'connections' => serialize($scp),
+                    'item' => $item,
+                    'type' => "Asterisk"
+                ]);
             }
         }
     }
