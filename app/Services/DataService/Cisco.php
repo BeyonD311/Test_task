@@ -117,7 +117,7 @@ class Cisco extends DataService
             ]
         ]);
         $items = json_decode($itemsQuery->response()->getBody()->getContents(), true);
-        if($items['responseCode'] !== 2000) {
+        if($items['responseCode'] < 2000 && $items['responseCode'] >= 3000) {
             throw new Connection($items["responseMessage"], $items['responseCode']);
         }
 
