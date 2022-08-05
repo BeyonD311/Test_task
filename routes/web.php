@@ -16,5 +16,3 @@
 |
 */
 
-$router->get('/', "\App\Http\Controllers\TestController@test");
-

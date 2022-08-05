@@ -30,7 +30,12 @@ class Cisco extends DataService
         $this->sigIn();
         $duration = 0;
         $maxDate = $this->getInstanceLastUpdate()->getTimestamp($this->server->getId());
+        $flagEmpty = false;
         foreach ($this->getItems() as $item) {
+            if(isset($item['isEmpty']) && $item['isEmpty'] === true) {
+                $flagEmpty = true;
+                break;
+            }
             if(empty($item['urls']['wavUrl'])) {
                 continue;
             }
@@ -41,11 +46,12 @@ class Cisco extends DataService
             if($maxDate < $item['sessionStartDate']) {
                 $maxDate = $item['sessionStartDate'];
             }
-
             $this->fileDownload($item);
         }
-        $maxDate /= 1000;
-        $this->getInstanceLastUpdate()->updateOrCreate($this->server->getId(), date('Y-m-d H:i:s', $maxDate));
+        if($flagEmpty === false) {
+            $maxDate /= 1000;
+            $this->getInstanceLastUpdate()->updateOrCreate($this->server->getId(), date('Y-m-d H:i:s', $maxDate));
+        }
     }
 
     private function sigIn(): void
@@ -120,9 +126,12 @@ class Cisco extends DataService
         if($items['responseCode'] < 2000 && $items['responseCode'] >= 3000) {
             throw new Connection($items["responseMessage"], $items['responseCode']);
         }
-
-        foreach ( $items['responseBody']['sessions'] as $item) {
-            yield $item;
+        if(isset($items['responseBody'])) {
+            foreach ( $items['responseBody']['sessions'] as $item) {
+                yield $item;
+            }
+        } else {
+            yield ["isEmpty" => true];
         }
     }
 
