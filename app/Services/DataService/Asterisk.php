@@ -28,13 +28,16 @@ class Asterisk extends DataService
         $driver = new Driver($this->db);
         $driver->setDriver('asterisk', 'mysql','asteriskcdrdb');
         $date = date('Y-m-d H:i:s', $this->getInstanceLastUpdate()->getTimestamp($this->db->getId()));
-        $items = $db->connection($driver->getConfig())->table('cdr')
-            ->where('calldate', '>', $date)
-            ->orderBy('calldate', 'desc');
+        $items = $db->connection($driver->getConfig())->table('cel')
+            ->leftJoin('cdr', 'cel.linkedid', '=', 'cdr.uniqueid')
+            ->where([
+                ['cel.eventtime', '>', $date],
+                ['cel.eventtype', '=', 'BRIDGE_EXIT'],
+                ['cdr.recordingfile', '!=', null]
+            ])
+            ->groupBy('cel.linkedid')
+            ->orderBy('cel.eventtime', 'DESC');
         foreach ($items->get()->toArray() as $item) {
-            if($item->recordingfile == false) {
-                continue;
-            }
             yield $item;
         }
     }
@@ -44,7 +47,7 @@ class Asterisk extends DataService
         $scp = new Scp($this->server, 'audio');
         $items = $this->getItems();
         if(!empty($items->current())) {
-            $this->getInstanceLastUpdate()->updateOrCreate($this->db->getId(), $items->current()->calldate);
+            $this->getInstanceLastUpdate()->updateOrCreate($this->db->getId(), $items->current()->eventtime);
             foreach ($items as $item) {
                 if($item->recordingfile != "") {
                     $path = self::path.date("Y/m/d", strtotime($item->calldate)). "/".$item->recordingfile;

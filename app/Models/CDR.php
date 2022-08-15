@@ -8,7 +8,12 @@ class CDR extends Model
 {
     protected $table = "cdr";
 
-    protected $fillable = ["calldate"];
+    protected $fillable = ["calldate", "uniqueid"];
 
     protected $connection = "mysql";
+
+    public function cel()
+    {
+        return $this->belongsTo(Cel::class, 'linkedid', 'uniqueid');
+    }
 }
