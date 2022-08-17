@@ -35,6 +35,7 @@ class Asterisk extends DataService
                 ['cel.eventtype', '=', 'BRIDGE_EXIT'],
                 ['cdr.recordingfile', '!=', null]
             ])
+            ->groupBy('cel.id')
             ->orderBy('cel.eventtime', 'DESC');
         foreach ($items->get()->toArray() as $item) {
             yield $item;
