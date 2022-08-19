@@ -50,7 +50,7 @@ class Asterisk extends DataService
     public function crawlingPages(): \Generator
     {
         $page = 1;
-        $count = 10;
+        $count = 100;
         while (true) {
             $items = $this->getItems($page, $count);
             if (empty($items)) {
