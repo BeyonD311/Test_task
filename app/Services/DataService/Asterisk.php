@@ -22,30 +22,51 @@ class Asterisk extends DataService
         parent::__construct();
     }
 
-    public function getItems(): \Generator
+    public function getItems($page, $count): array
     {
         $db = app('db');
         $driver = new Driver($this->db);
         $driver->setDriver('asterisk', 'mysql','asteriskcdrdb');
         $date = date('Y-m-d H:i:s', $this->getInstanceLastUpdate()->getTimestamp($this->db->getId()));
+        /**
+         * @var \Illuminate\Database\Query\Builder $items
+         */
         $items = $db->connection($driver->getConfig())->table('cel')
             ->leftJoin('cdr', 'cel.linkedid', '=', 'cdr.uniqueid')
             ->where([
                 ['cel.eventtime', '>', $date],
-                ['cel.eventtype', '=', 'BRIDGE_EXIT'],
+                ['cel.eventtype', '=', "BRIDGE_EXIT"],
                 ['cdr.recordingfile', '!=', null]
             ])
-            ->groupBy('cel.id')
-            ->orderBy('cel.eventtime', 'DESC');
-        foreach ($items->get()->toArray() as $item) {
-            yield $item;
+            ->orderBy('cel.eventtime', 'DESC')
+            ->groupBy('cel.linkedid', 'cel.id')
+            ->paginate($count, page: $page);
+        if($page > $items->lastPage()) {
+            return [];
+        }
+        return $items->items();
+    }
+
+    public function crawlingPages(): \Generator
+    {
+        $page = 1;
+        $count = 10;
+        while (true) {
+            $items = $this->getItems($page, $count);
+            if (empty($items)) {
+                break;
+            }
+            foreach ($items as $item) {
+                yield $item;
+            }
+            $page++;
         }
     }
 
     public function download()
     {
         $scp = new Scp($this->server, 'audio');
-        $items = $this->getItems();
+        $items = $this->crawlingPages();
         if(!empty($items->current())) {
             $this->getInstanceLastUpdate()->updateOrCreate($this->db->getId(), $items->current()->eventtime);
             foreach ($items as $item) {
