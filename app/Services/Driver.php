@@ -29,14 +29,15 @@ final class Driver
         if(isset($this->config[$name])) {
             $newConfig = $this->config[$driver];
         }
-
         $this->name = $name;
+        $newConfig = config("database.connections.mysql");
         $newConfig['driver'] = $driver;
         $newConfig['host'] = $this->db->getHost();
         $newConfig['port'] = $this->db->getPort();
         $newConfig['username'] = $this->db->getLogin();
         $newConfig['password'] = $this->db->getPass();
         $newConfig['database'] = $database;
+        $newConfig['strict'] = false;
         config(['database.connections.'.$name => $newConfig]);
     }
 

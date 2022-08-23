@@ -38,6 +38,7 @@ class Asterisk extends DataService
                 ['cel.eventtype', '=', "BRIDGE_EXIT"],
                 ['cdr.recordingfile', '!=', null]
             ])
+            ->groupBy('cel.linkedid', 'cel.id')
             ->orderBy('cel.eventtime', 'DESC')
             ->paginate($count, page: $page);
         if($page > $items->lastPage()) {
