@@ -31,13 +31,12 @@ class Asterisk extends DataService
         /**
          * @var \Illuminate\Database\Query\Builder $items
          */
+        $where = $this->generateQueryData($date);
+        $where[] = ['cel.eventtype', '=', "BRIDGE_EXIT"];
+        $where[] = ['cdr.recordingfile', '!=', null];
         $items = $db->connection($driver->getConfig())->table('cel')
             ->leftJoin('cdr', 'cel.linkedid', '=', 'cdr.uniqueid')
-            ->where([
-                ['cel.eventtime', '>', $date],
-                ['cel.eventtype', '=', "BRIDGE_EXIT"],
-                ['cdr.recordingfile', '!=', null]
-            ])
+            ->where($where)
             ->groupBy('cel.linkedid', 'cel.id')
             ->orderBy('cel.eventtime', 'DESC')
             ->paginate($count, page: $page);
@@ -70,7 +69,7 @@ class Asterisk extends DataService
         if(!empty($items->current())) {
             $this->getInstanceLastUpdate()->updateOrCreate($this->db->getId(), $items->current()->eventtime);
             foreach ($items as $item) {
-                if($item->recordingfile != "") {
+                if($item->recordingfile != "" && !file_exists("/var/www/storage/audio/".$item->recordingfile)) {
                     $path = self::path.date("Y/m/d", strtotime($item->calldate)). "/".$item->recordingfile;
                     $scp->setPathDownload($path);
                     Artisan::call('file', [
@@ -81,5 +80,22 @@ class Asterisk extends DataService
                 }
             }
         }
+    }
+
+    private function generateQueryData(string $lastDate): array
+    {
+        $currentDate = date('Y-m-d 00:00:00');
+        if(strtotime($lastDate) > strtotime($currentDate)) {
+            $where = [
+                ['cel.eventtime', '>', $currentDate],
+                ['cel.eventtime', '<', $lastDate],
+            ];
+        } else {
+            $where = [
+                ['cel.eventtime', '>', $lastDate],
+                ['cel.eventtime', '<', date('Y-m-d H:i:s')],
+            ];
+        }
+        return $where;
     }
 }
