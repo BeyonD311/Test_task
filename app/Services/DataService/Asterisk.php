@@ -87,13 +87,13 @@ class Asterisk extends DataService
         $currentDate = date('Y-m-d 00:00:00');
         if(strtotime($lastDate) > strtotime($currentDate)) {
             $where = [
-                ['cel.eventtime', '>', $currentDate],
-                ['cel.eventtime', '<', $lastDate],
+                ['cel.eventtime', '>=', $currentDate],
+                ['cel.eventtime', '<=', $lastDate],
             ];
         } else {
             $where = [
-                ['cel.eventtime', '>', $lastDate],
-                ['cel.eventtime', '<', date('Y-m-d H:i:s')],
+                ['cel.eventtime', '>=', $lastDate],
+                ['cel.eventtime', '<=', date('Y-m-d H:i:s')],
             ];
         }
         return $where;
