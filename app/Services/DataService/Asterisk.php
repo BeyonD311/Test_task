@@ -32,13 +32,12 @@ class Asterisk extends DataService
          * @var \Illuminate\Database\Query\Builder $items
          */
         $where = $this->generateQueryData($date);
-        $where[] = ['cel.eventtype', '=', "BRIDGE_EXIT"];
+        $where[] = ['cdr.disposition', '=', "ANSWERED"];
         $where[] = ['cdr.recordingfile', '!=', null];
-        $items = $db->connection($driver->getConfig())->table('cel')
-            ->leftJoin('cdr', 'cel.linkedid', '=', 'cdr.uniqueid')
+        $items = $db->connection($driver->getConfig())->table('cdr')
             ->where($where)
-            ->groupBy('cel.linkedid', 'cel.id')
-            ->orderBy('cel.eventtime', 'DESC')
+            ->groupBy('cdr.linkedid')
+            ->orderBy('cdr.calldate', 'DESC')
             ->paginate($count, page: $page);
         if($page > $items->lastPage()) {
             return [];
@@ -48,7 +47,7 @@ class Asterisk extends DataService
 
     public function crawlingPages(): \Generator
     {
-        $page = 1;
+        $page = 0;
         $count = 100;
         while (true) {
             $items = $this->getItems($page, $count);
@@ -87,13 +86,13 @@ class Asterisk extends DataService
         $currentDate = date('Y-m-d 00:00:00');
         if(strtotime($lastDate) > strtotime($currentDate)) {
             $where = [
-                ['cel.eventtime', '>=', $currentDate],
-                ['cel.eventtime', '<=', $lastDate],
+                ['cdr.calldate', '>=', $currentDate],
+                ['cdr.calldate', '<=', $lastDate],
             ];
         } else {
             $where = [
-                ['cel.eventtime', '>=', $lastDate],
-                ['cel.eventtime', '<=', date('Y-m-d H:i:s')],
+                ['cdr.calldate', '>=', $lastDate],
+                ['cdr.calldate', '<=', date('Y-m-d H:i:s')],
             ];
         }
         return $where;
