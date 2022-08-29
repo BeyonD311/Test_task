@@ -31,9 +31,12 @@ class Asterisk extends DataService
         /**
          * @var \Illuminate\Database\Query\Builder $items
          */
-        $where = $this->generateQueryData($date);
-        $where[] = ['cdr.disposition', '=', "ANSWERED"];
-        $where[] = ['cdr.recordingfile', '!=', null];
+        $where = [
+            ['cdr.calldate', '>=', date("Y-m-d 00:00:00", strtotime($date))],
+            ['cdr.calldate', '<=', date('Y-m-d H:i:s')],
+            ['cdr.disposition', '=', "ANSWERED"],
+            ['cdr.recordingfile', '!=', null]
+        ];
         $items = $db->connection($driver->getConfig())->table('cdr')
             ->where($where)
             ->groupBy('cdr.linkedid')
@@ -78,21 +81,5 @@ class Asterisk extends DataService
                 }
             }
         }
-    }
-
-    private function generateQueryData(string $lastDate): array
-    {
-        if(strtotime($lastDate) > strtotime(date('Y-m-d H:i:s'))) {
-            $where = [
-                ['cdr.calldate', '>=', date('Y-m-d 00:00:00')],
-                ['cdr.calldate', '<=', date('Y-m-d 23:59:59')],
-            ];
-        } else {
-            $where = [
-                ['cdr.calldate', '>=', $lastDate],
-                ['cdr.calldate', '<=', date('Y-m-d H:i:s')],
-            ];
-        }
-        return $where;
     }
 }
