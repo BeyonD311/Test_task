@@ -37,7 +37,6 @@ class Asterisk extends DataService
         $items = $db->connection($driver->getConfig())->table('cdr')
             ->where($where)
             ->groupBy('cdr.linkedid')
-            ->orderBy('cdr.calldate', 'DESC')
             ->paginate($count, page: $page);
         if($page > $items->lastPage()) {
             return [];
@@ -83,11 +82,10 @@ class Asterisk extends DataService
 
     private function generateQueryData(string $lastDate): array
     {
-        $currentDate = date('Y-m-d 00:00:00');
-        if(strtotime($lastDate) > strtotime($currentDate)) {
+        if(strtotime($lastDate) > strtotime(date('Y-m-d H:i:s'))) {
             $where = [
-                ['cdr.calldate', '>=', $currentDate],
-                ['cdr.calldate', '<=', $lastDate],
+                ['cdr.calldate', '>=', date('Y-m-d 00:00:00')],
+                ['cdr.calldate', '<=', date('Y-m-d 23:59:59')],
             ];
         } else {
             $where = [
