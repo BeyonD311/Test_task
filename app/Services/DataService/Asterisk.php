@@ -66,7 +66,7 @@ class Asterisk extends DataService
         $scp = new Scp($this->server, 'audio');
         $items = $this->crawlingPages();
         if(!empty($items->current())) {
-            $this->getInstanceLastUpdate()->updateOrCreate($this->db->getId(), $items->current()->eventtime);
+            $this->getInstanceLastUpdate()->updateOrCreate($this->db->getId(), $items->current()->calldate);
             foreach ($items as $item) {
                 if($item->recordingfile != "" && !file_exists("/var/www/storage/audio/".$item->recordingfile)) {
                     $path = self::path.date("Y/m/d", strtotime($item->calldate)). "/".$item->recordingfile;
