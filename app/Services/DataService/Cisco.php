@@ -46,9 +46,10 @@ class Cisco extends DataService
             if($maxDate < $item['sessionStartDate']) {
                 $maxDate = $item['sessionStartDate'];
             }
-            if(file_exists("/var/www/storage/audio/".$item['urls']['wavUrl'])) {
+            if(file_exists("/var/www/storage/audio/".md5($item['urls']['wavUrl'])."-".$this->server->getConnectionId().".wav")) {
                 continue;
             }
+            $item['connection_id'] = $this->server->getConnectionId();
             $this->fileDownload($item);
         }
         if($flagEmpty === false) {
