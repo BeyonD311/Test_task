@@ -9,8 +9,8 @@ use Illuminate\Support\Facades\Log;
 class Scp
 {
     use SerializesModels;
-    
-    const download = "/var/www/storage/";
+
+    const DOWNLOAD = "/var/www/storage/";
 
     protected string $pathDownload;
 
@@ -42,7 +42,12 @@ class Scp
             $this->server->getLogin().
             "@".$this->server->getHost().
             ":".$this->pathDownload.
-            " ".self::download.$this->to." 2>/dev/null > /dev/null";
+            " ".self::DOWNLOAD.$this->to;
+    }
+
+    public function getServer(): Host
+    {
+        return $this->server;
     }
 
     public function download()

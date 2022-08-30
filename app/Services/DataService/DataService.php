@@ -51,6 +51,6 @@ class DataService implements DataServices
 
     public function download()
     {
-        // TODO: Implement download() method.
+        // Реализация
     }
 }

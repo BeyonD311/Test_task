@@ -57,7 +57,8 @@ class DownloadJob extends Job
             ->setId($server['id'])
             ->setPort($server['port'])
             ->setLogin($server['login'])
-            ->setPass($server['pass']);
+            ->setPass($server['pass'])
+            ->setConnectionId($server['connection_id']);
     }
 
     private function databaseServerCreate(array $database): Host
@@ -68,6 +69,7 @@ class DownloadJob extends Job
             ->setLogin($database['login'])
             ->setPass($database['pass'])
             ->setId($database['id'])
-            ->setTable($database['table']);
+            ->setTable($database['table'])
+            ->setConnectionId($database['connection_id']);
     }
 }

@@ -66,9 +66,10 @@ abstract class Host implements \App\Interfaces\Host
         return $this->_pass;
     }
 
-    public function setConnectionId(int $connectionId)
+    public function setConnectionId(int $connectionId): static
     {
         $this->connectionId = $connectionId;
+        return $this;
     }
 
     public function getConnectionId(): int
