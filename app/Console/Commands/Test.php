@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Services\DataService\Asterisk;
-use App\Services\Hosts\Server;
+use App\Services\Connections\Server;
 
 class Test extends \Illuminate\Console\Command
 {
@@ -28,7 +28,7 @@ class Test extends \Illuminate\Console\Command
      */
     public function handle()
     {
-        $db = new \App\Services\Hosts\DB;
+        /*$db = new \App\Services\Hosts\DB;
         $db->setHost('10.3.0.10')
             ->setPort('3306')
             ->setLogin('user')
@@ -40,7 +40,7 @@ class Test extends \Illuminate\Console\Command
             ->setLogin('root')
             ->setPass('!DLP$tend%');
         $asterisk = new Asterisk($server,$db);
-        $asterisk->download();
+        $asterisk->download();*/
         return 0;
     }
 }

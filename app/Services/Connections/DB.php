@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Hosts;
+namespace App\Services\Connections;
 
 class DB extends Host
 {

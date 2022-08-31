@@ -2,8 +2,8 @@
 
 namespace App\Jobs;
 use App\Interfaces\Host;
-use App\Services\Hosts\DB;
-use App\Services\Hosts\Server;
+use App\Services\Connections\DB;
+use App\Services\Connections\Server;
 
 class DownloadJob extends Job
 {

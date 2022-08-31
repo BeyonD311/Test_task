@@ -1,10 +1,9 @@
 <?php
 
-namespace App\Services\Connections;
+namespace App\Services\Protocols;
 
 use App\Interfaces\Host;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Log;
 
 class Scp
 {

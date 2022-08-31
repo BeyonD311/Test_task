@@ -3,13 +3,13 @@
 namespace App\Services\DataService;
 
 use App\Exceptions\Connection;
-use App\Services\Connections\Rest;
-use App\Services\Hosts\Host;
+use App\Services\Protocols\Http;
+use App\Services\Connections\Host;
 use Illuminate\Support\Facades\Artisan;
 
 class Cisco extends DataService
 {
-    private Rest $rest;
+    private Http $rest;
 
     private array $cookie = [
         'JSESSIONID' => NULL
@@ -21,7 +21,7 @@ class Cisco extends DataService
         protected Host $server
     )
     {
-        $this->rest = new Rest('https://'.$this->server->getHost().':'.$this->server->getPort().'/ora/');
+        $this->rest = new Http('https://'.$this->server->getHost().':'.$this->server->getPort().'/ora/');
         parent::__construct();
     }
 

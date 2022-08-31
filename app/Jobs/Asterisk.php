@@ -3,7 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Files;
-use App\Services\Connections\Scp;
+use App\Services\Protocols\Scp;
 use App\Services\File;
 use \Illuminate\Support\Facades\Log;
 

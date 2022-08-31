@@ -2,15 +2,15 @@
 
 namespace App\Services\DataService;
 
-use App\Services\Connections\Scp;
+use App\Services\Protocols\Scp;
 use App\Services\Driver;
-use App\Services\Hosts\Host;
+use App\Services\Connections\Host;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 
 class Asterisk extends DataService
 {
-    const path = "/var/spool/asterisk/monitor/";
+    private static string $path;
 
     protected string $lastUpdateConnection = "database_connection_id";
 
@@ -19,6 +19,7 @@ class Asterisk extends DataService
         protected Host $db
     )
     {
+        self::$path = env('ASTERISK_DIR');
         parent::__construct();
     }
 
@@ -71,8 +72,8 @@ class Asterisk extends DataService
             $this->getInstanceLastUpdate()->updateOrCreate($this->db->getId(), $items->current()->calldate);
             foreach ($items as $item) {
                 if($item->recordingfile != "" && !file_exists("/var/www/storage/audio/".$item->recordingfile)) {
-                    $path = self::path.date("Y/m/d", strtotime($item->calldate)). "/".$item->recordingfile;
-                    $scp->setPathDownload($path);
+                    $makePath = self::$path.date("Y/m/d", strtotime($item->calldate)). "/".$item->recordingfile;
+                    $scp->setPathDownload($makePath);
                     Artisan::call('file', [
                         'connections' => serialize($scp),
                         'item' => $item,
