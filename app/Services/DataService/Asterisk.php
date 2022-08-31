@@ -40,6 +40,7 @@ class Asterisk extends DataService
         $items = $db->connection($driver->getConfig())->table('cdr')
             ->where($where)
             ->groupBy('cdr.linkedid')
+            ->orderBy('cdr.calldate', 'DESC')
             ->paginate($count, page: $page);
         if($page > $items->lastPage()) {
             return [];
