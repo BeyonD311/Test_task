@@ -37,6 +37,7 @@ class Asterisk extends DataService
             ['cdr.disposition', '=', "ANSWERED"],
             ['cdr.recordingfile', '!=', null]
         ];
+        Log::info(json_encode($where, JSON_PRETTY_PRINT));
         $items = $db->connection($driver->getConfig())->table('cdr')
             ->where($where)
             ->groupBy('cdr.linkedid')
