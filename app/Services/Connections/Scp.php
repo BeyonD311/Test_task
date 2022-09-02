@@ -52,6 +52,8 @@ class Scp
         $output = [];
         $code = 0;
         exec($exec, $output, $code);
+        Log::info(json_encode($output, JSON_PRETTY_PRINT));
+        Log::info($code);
         if ($code != 0) {
             throw new Connection(json_encode($output, JSON_PRETTY_PRINT), 404);
         }
