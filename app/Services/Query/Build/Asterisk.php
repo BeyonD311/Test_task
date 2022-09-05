@@ -1,11 +1,16 @@
 <?php
 
-namespace App\Services\Query;
+namespace App\Services\Query\Build;
+
+use App\Services\Query\Query;
 
 class Asterisk extends Query
 {
     public function addFiled(string $name, string $value, string $operator = ""): static
     {
+        if($operator === "") {
+            throw new \App\Exceptions\Query("Нет оператора", 409);
+        }
         $this->queryMap[] = [$name,$operator, $value];
         return $this;
     }
