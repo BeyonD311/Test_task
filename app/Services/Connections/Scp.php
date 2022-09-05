@@ -2,6 +2,7 @@
 
 namespace App\Services\Connections;
 
+use App\Exceptions\Connection;
 use App\Interfaces\Host;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
@@ -9,7 +10,7 @@ use Illuminate\Support\Facades\Log;
 class Scp
 {
     use SerializesModels;
-    
+
     const download = "/var/www/storage/";
 
     protected string $pathDownload;
@@ -42,7 +43,7 @@ class Scp
             $this->server->getLogin().
             "@".$this->server->getHost().
             ":".$this->pathDownload.
-            " ".self::download.$this->to." 2>/dev/null > /dev/null";
+            " ".self::download.$this->to;
     }
 
     public function download()
@@ -51,5 +52,11 @@ class Scp
         $output = [];
         $code = 0;
         exec($exec, $output, $code);
+        Log::info(json_encode($output, JSON_PRETTY_PRINT));
+        Log::info($code);
+        Log::info($exec);
+        if ($code != 0) {
+            throw new Connection(json_encode($output, JSON_PRETTY_PRINT), 404);
+        }
     }
 }

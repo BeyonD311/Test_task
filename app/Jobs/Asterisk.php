@@ -26,7 +26,7 @@ class Asterisk extends Job
             $this->scp->download();
             $this->saveFileInfo($this->item);
         } catch (\Throwable $exception) {
-            Log::error(json_encode($exception, JSON_PRETTY_PRINT));
+            Log::error($exception->getMessage());
             $this->fail($exception);
         } finally {
             unset($this->scp);
