@@ -51,17 +51,17 @@ class Asterisk extends DataService
 
     public function crawlingPages(): \Generator
     {
-        $page = 0;
+        $page = 1;
         $count = 100;
         while (true) {
             $items = $this->getItems($page, $count);
+            $page++;
             if (empty($items)) {
                 break;
             }
             foreach ($items as $item) {
                 yield $item;
             }
-            $page++;
         }
     }
 
@@ -73,11 +73,11 @@ class Asterisk extends DataService
             $this->getInstanceLastUpdate()->updateOrCreate($this->db->getId(), $items->current()->calldate);
             foreach ($items as $item) {
                 if($item->recordingfile != "") {
-                    $tempName = preg_replace("/\.[a-z0-9]$/", "", $item->recordingfile);
+                    $tempName = preg_replace("/\.[a-z0-9]*$/", "", $item->recordingfile);
                     $wav = "$tempName.wav";
                     $mp3 = "$tempName.mp3";
                     unset($tempName);
-                    if(!file_exists("/var/www/storage/audio/".$wav) || !file_exists("/var/www/storage/audio/".$mp3)) {
+                    if(!file_exists("/var/www/storage/audio/".$wav) && !file_exists("/var/www/storage/audio/".$mp3)) {
                         $path = self::path.date("Y/m/d", strtotime($item->calldate)). "/".$item->recordingfile;
                         $scp->setPathDownload($path);
                         Artisan::call('file', [
