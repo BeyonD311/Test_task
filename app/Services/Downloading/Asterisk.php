@@ -37,6 +37,7 @@ class Asterisk extends DataService
             ['cdr.disposition', '=', "ANSWERED"],
             ['cdr.recordingfile', '!=', null]
         ];
+        Log::info(json_encode($where, JSON_PRETTY_PRINT));
         $items = $db->connection($driver->getConfig())->table('cdr')
             ->where($where)
             ->groupBy('cdr.linkedid')
@@ -71,9 +72,8 @@ class Asterisk extends DataService
         if(!empty($items->current())) {
             $this->getInstanceLastUpdate()->updateOrCreate($this->db->getId(), $items->current()->calldate);
             foreach ($items as $item) {
-                if($item->recordingfile != "" && !file_exists("/var/www/storage/audio/".$item->recordingfile)) {
-                    $makePath = self::$path.date("Y/m/d", strtotime($item->calldate)). "/".$item->recordingfile;
-                    $scp->setPathDownload($makePath);
+                if($item->recordingfile != "" && $this->checkFileExists($item->recordingfile)) {
+                    $scp->setPathDownload(self::$path.date("Y/m/d", strtotime($item->calldate)). "/".$item->recordingfile);
                     Artisan::call('file', [
                         'connections' => serialize($scp),
                         'item' => $item,
@@ -82,5 +82,21 @@ class Asterisk extends DataService
                 }
             }
         }
+    }
+
+    /**
+     * @param string $name
+     * @return bool
+     */
+    private function checkFileExists(string $name): bool
+    {
+        $tempName = preg_replace("/\.[a-z0-9]$/", "", $name);
+        $wav = "$tempName.wav";
+        $mp3 = "$tempName.mp3";
+        if(!file_exists("/var/www/storage/audio/".$wav) || !file_exists("/var/www/storage/audio/".$mp3))
+        {
+            return true;
+        }
+        return false;
     }
 }

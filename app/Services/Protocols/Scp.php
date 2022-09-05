@@ -2,6 +2,7 @@
 
 namespace App\Services\Protocols;
 
+use App\Exceptions\Connection;
 use App\Interfaces\Host;
 use Illuminate\Queue\SerializesModels;
 
@@ -55,5 +56,8 @@ class Scp
         $output = [];
         $code = 0;
         exec($exec, $output, $code);
+        if($code != 0) {
+            throw new Connection(json_encode($output));
+        }
     }
 }
