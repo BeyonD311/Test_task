@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Services\DataService\Asterisk;
+use App\Services\Downloading\Asterisk;
 use App\Services\Connections\Server;
 
 class Test extends \Illuminate\Console\Command

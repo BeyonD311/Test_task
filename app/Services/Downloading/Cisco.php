@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\DataService;
+namespace App\Services\Downloading;
 
 use App\Exceptions\Connection;
 use App\Services\Protocols\Http;

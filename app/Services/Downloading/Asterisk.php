@@ -1,12 +1,11 @@
 <?php
 
-namespace App\Services\DataService;
+namespace App\Services\Downloading;
 
 use App\Services\Protocols\Scp;
 use App\Services\Driver;
 use App\Services\Connections\Host;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Log;
 
 class Asterisk extends DataService
 {

@@ -36,9 +36,9 @@ class DownloadJob extends Job
      */
     public function handle()
     {
-        $nameDataService = ucfirst(strtolower($this->name));
-        $instance = "App\Services\DataService\\$nameDataService";
-        try{
+        $nameDownloading = ucfirst(strtolower($this->name));
+        $instance = "App\Services\Downloading\\$nameDownloading";
+        try {
              $instance = match (strtolower($this->name)) {
                 'asterisk' => new $instance($this->server, $this->database),
                 'cisco' => new $instance($this->server)

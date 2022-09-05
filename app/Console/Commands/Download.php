@@ -55,7 +55,7 @@ class Download extends Command
         {
             try {
                 // Создание instance по полю name из таблицы connections в db connection
-                // Поле соответвует названию класса в app/Services/DataService
+                // Поле соответвует названию класса в app/Services/Downloading
                 dispatch(new DownloadJob($connect['name'], $connect['server'], $connect['dbServer']))->onConnection('database')->onQueue('download');
             } catch (\Throwable $exception) {
                 dump($exception->getMessage(),'File: '.$exception->getFile(),'Line: ', $exception->getLine());
