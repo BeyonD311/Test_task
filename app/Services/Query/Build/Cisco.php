@@ -2,9 +2,7 @@
 
 namespace App\Services\Query\Build;
 
-use App\Services\Query\Query;
-
-class Cisco extends Query
+class Cisco extends Build
 {
     protected array $innerParams = [];
 
@@ -12,19 +10,18 @@ class Cisco extends Query
     {
         $this->queryMap = [
             "json" => [
-                "requestParameters" => array_values($this->innerParams)
+                "requestParameters" => [
+
+                ]
             ]
         ];
     }
 
-    public function addFiled(string $name, string $value, string $operator = ""): static
+    public function addFiled(string $name, string|array $value, string $operator = ""): static
     {
-        $this->innerParams[$name][] = [
-            "fieldName" => $name,
-            "fieldConditions" => [
+        if($name == 'fieldName') {
 
-            ]
-        ];
+        }
         return $this;
     }
 
@@ -37,4 +34,5 @@ class Cisco extends Query
     {
         return $this;
     }
+
 }

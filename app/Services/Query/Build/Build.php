@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Services\Query;
+namespace App\Services\Query\Build;
 
 use App\Interfaces\IBuilderQuery;
 
-abstract class Query implements  IBuilderQuery
+abstract class Build implements IBuilderQuery
 {
     protected array $queryMap = [];
 

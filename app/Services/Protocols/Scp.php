@@ -32,8 +32,9 @@ class Scp
     {
         return "sshpass -p '".$this->server->getPass()."'";
     }
+
     /**
-     * @param string $from куда загружать файлы
+     * Формирование scp команды
      * @return string
      */
     private function makeScp(): string

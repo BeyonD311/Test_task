@@ -7,11 +7,11 @@ interface IBuilderQuery
     /**
      * Создание полей
      * @param string $name
-     * @param string $value
+     * @param string|array $value
      * @param string $operator - используется для состовления полей в db
      * @return $this
      */
-    public function addFiled(string $name,string $value, string $operator = ""): static;
+    public function addFiled(string $name,string|array $value, string $operator = ""): static;
 
     /**
      * @param string|int $field

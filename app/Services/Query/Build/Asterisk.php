@@ -2,11 +2,9 @@
 
 namespace App\Services\Query\Build;
 
-use App\Services\Query\Query;
-
-class Asterisk extends Query
+class Asterisk extends Build
 {
-    public function addFiled(string $name, string $value, string $operator = ""): static
+    public function addFiled(string $name, string|array $value, string $operator = ""): static
     {
         if($operator === "") {
             throw new \App\Exceptions\Query("Нет оператора", 409);
