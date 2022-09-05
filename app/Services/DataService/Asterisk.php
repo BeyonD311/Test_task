@@ -71,14 +71,20 @@ class Asterisk extends DataService
         if(!empty($items->current())) {
             $this->getInstanceLastUpdate()->updateOrCreate($this->db->getId(), $items->current()->calldate);
             foreach ($items as $item) {
-                if($item->recordingfile != "" && !file_exists("/var/www/storage/audio/".$item->recordingfile)) {
-                    $path = self::path.date("Y/m/d", strtotime($item->calldate)). "/".$item->recordingfile;
-                    $scp->setPathDownload($path);
-                    Artisan::call('file', [
-                        'connections' => serialize($scp),
-                        'item' => $item,
-                        'type' => "Asterisk"
-                    ]);
+                if($item->recordingfile != "") {
+                    $tempName = preg_replace("/\.[a-z0-9]$/", "", $item->recordingfile);
+                    $wav = "$tempName.wav";
+                    $mp3 = "$tempName.mp3";
+                    unset($tempName);
+                    if(!file_exists("/var/www/storage/audio/".$wav) || !file_exists("/var/www/storage/audio/".$mp3)) {
+                        $path = self::path.date("Y/m/d", strtotime($item->calldate)). "/".$item->recordingfile;
+                        $scp->setPathDownload($path);
+                        Artisan::call('file', [
+                            'connections' => serialize($scp),
+                            'item' => $item,
+                            'type' => "Asterisk"
+                        ]);
+                    }
                 }
             }
         }
