@@ -31,9 +31,11 @@ class Asterisk extends DataService
         /**
          * @var \Illuminate\Database\Query\Builder $items
          */
+        $timeZone = new \DateTimeZone("Europe/Moscow");
+        $dateNow = new \DateTime('now', $timeZone);
         $where = [
             ['cdr.calldate', '>=', date("Y-m-d 00:00:00", strtotime($date))],
-            ['cdr.calldate', '<=', date('Y-m-d H:i:s')],
+            ['cdr.calldate', '<=', $dateNow->format('Y-m-d H:i:s')],
             ['cdr.disposition', '=', "ANSWERED"],
             ['cdr.recordingfile', '!=', null]
         ];
