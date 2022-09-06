@@ -73,6 +73,7 @@ class Asterisk extends DataService
             $this->getInstanceLastUpdate()->updateOrCreate($this->db->getId(), $items->current()->calldate);
             foreach ($items as $item) {
                 if($item->recordingfile != "") {
+                    Log::info(json_encode($item, JSON_PRETTY_PRINT));
                     $tempName = preg_replace("/\.[a-z0-9]*$/", "", $item->recordingfile);
                     $wav = "$tempName.wav";
                     $mp3 = "$tempName.mp3";
