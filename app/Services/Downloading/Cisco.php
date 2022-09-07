@@ -2,36 +2,38 @@
 
 namespace App\Services\Downloading;
 
-use App\Exceptions\Connection;
+
+use App\Interfaces\ConnectionInterface;
 use App\Services\Protocols\Http;
-use App\Services\Connections\Host;
+use App\Services\Connections\Options\Server;
 use Illuminate\Support\Facades\Artisan;
+use \App\Services\Connection;
+use App\Exceptions\Connection as ConnectException;
 
 class Cisco extends DataService
 {
-    private Http $rest;
-
-    private array $cookie = [
-        'JSESSIONID' => NULL
-    ];
 
     protected string $lastUpdateConnection = "server_connection_id";
+    protected array $cookie;
+    protected ConnectionInterface $connection;
 
     public function __construct(
-        protected Host $server
+        protected Server $server
     )
     {
-        $this->rest = new Http('https://'.$this->server->getHost().':'.$this->server->getPort().'/ora/');
+        $http = new Connection();
+        $http->setConnection(new \App\Services\Connections\Cisco($this->server));
+        $this->connection = $http->connection();
+        $this->cookie = $http->getOptions();
         parent::__construct();
     }
 
     public function download()
     {
-        $this->sigIn();
         $duration = 0;
         $maxDate = $this->getInstanceLastUpdate()->getTimestamp($this->server->getId());
         $flagEmpty = false;
-        foreach ($this->getItems() as $item) {
+        foreach ($this->getItems($this->connection->connection()) as $item) {
             if(isset($item['isEmpty']) && $item['isEmpty'] === true) {
                 $flagEmpty = true;
                 break;
@@ -58,41 +60,11 @@ class Cisco extends DataService
         }
     }
 
-    private function sigIn(): void
-    {
-        $sigIn = $this->rest->send('post', 'authenticationService/authentication/signIn', [
-            'json' => [
-                "requestParameters" => [
-                    'username' => $this->server->getLogin(),
-                    'password' => $this->server->getPass()
-                ]
-            ]
-        ]);
-        $response = json_decode($sigIn->response()->getBody()->getContents(), true);
-        #Cisco code success 2000
-        if($response['responseCode'] !== 2000) {
-            throw new Connection($response["responseMessage"], $response['responseCode']);
-        }
-
-        foreach ($sigIn->response()->getHeader('Set-Cookie') as $cookie) {
-            if(str_contains($cookie, 'JSESSIONID')) {
-                $params = explode(';', $cookie);
-                foreach ($params as $param) {
-                    if(str_contains($cookie, 'JSESSIONID')) {
-                        $param = explode('=', $param);
-                        $this->cookie['JSESSIONID'] = $param[1];
-                        break 2;
-                    }
-                }
-            }
-        }
-    }
-
-    private function getItems(): \Generator
+    private function getItems(Http $http): \Generator
     {
         $lastDate = $this->getInstanceLastUpdate()->getTimestamp($this->server->getId());
 
-        $itemsQuery = $this->rest->send('post', 'queryService/query/getSessions', [
+        $itemsQuery = $http->send('post', 'queryService/query/getSessions', [
             "json" => [
                 "requestParameters" => [
                     [
@@ -128,7 +100,7 @@ class Cisco extends DataService
         ]);
         $items = json_decode($itemsQuery->response()->getBody()->getContents(), true);
         if($items['responseCode'] < 2000 && $items['responseCode'] >= 3000) {
-            throw new Connection($items["responseMessage"], $items['responseCode']);
+            throw new ConnectException($items["responseMessage"], $items['responseCode']);
         }
         if(isset($items['responseBody'])) {
             foreach ( $items['responseBody']['sessions'] as $item) {

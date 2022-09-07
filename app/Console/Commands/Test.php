@@ -2,8 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Services\Connections\Options\DB;
 use App\Services\Downloading\Asterisk;
-use App\Services\Connections\Server;
+use App\Services\Connections\Options\Server;
 
 class Test extends \Illuminate\Console\Command
 {
@@ -28,19 +29,21 @@ class Test extends \Illuminate\Console\Command
      */
     public function handle()
     {
-        /*$db = new \App\Services\Hosts\DB;
+        $db = new DB();
         $db->setHost('10.3.0.10')
             ->setPort('3306')
             ->setLogin('user')
             ->setPass('P@ssw0rd1')
             ->setId(1);
-
-        $server = new Server();
+        /* $server = new Server();
         $server->setHost("10.3.0.10")
             ->setLogin('root')
             ->setPass('!DLP$tend%');
         $asterisk = new Asterisk($server,$db);
         $asterisk->download();*/
+
+        $aster = new \App\Services\Connections\Asterisk($db);
+
         return 0;
     }
 }

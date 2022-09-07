@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Connections;
+namespace App\Services\Connections\Options;
 
 
 use Illuminate\Queue\SerializesModels;

@@ -4,7 +4,7 @@ namespace App\Services\Downloading;
 
 use App\Services\Protocols\Scp;
 use App\Services\Driver;
-use App\Services\Connections\Host;
+use App\Services\Connections\Options\Host;
 use Illuminate\Support\Facades\Artisan;
 
 class Asterisk extends DataService
@@ -37,7 +37,7 @@ class Asterisk extends DataService
             ['cdr.disposition', '=', "ANSWERED"],
             ['cdr.recordingfile', '!=', null]
         ];
-        Log::info(json_encode($where, JSON_PRETTY_PRINT));
+
         $items = $db->connection($driver->getConfig())->table('cdr')
             ->where($where)
             ->groupBy('cdr.linkedid')

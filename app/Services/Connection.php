@@ -4,33 +4,25 @@ namespace App\Services;
 
 use App\Interfaces\Host;
 use \App\Interfaces\ConnectionInterface;
-# Для дальнейшей модарнизации
-class Connection implements ConnectionInterface
+
+class Connection
 {
-    public function __construct
-    (
-        protected Host $server,
-        protected Host $db
-    )
-    {}
+    protected ConnectionInterface $connection;
 
-    public function connect()
+    public function setConnection(ConnectionInterface $connection): self
     {
-        // TODO: Implement connect() method.
+        $this->connection = $connection;
+        return $this;
     }
 
-    public function getStatus()
+    public function connection()
     {
-        // TODO: Implement getStatus() method.
+        return $this->connection->connection();
     }
 
-    public function disconnect()
+    public function getOptions()
     {
-        // TODO: Implement disconnect() method.
+        return $this->connection->getOptions();
     }
 
-    public function checkConnection()
-    {
-        // TODO: Implement checkConnection() method.
-    }
 }

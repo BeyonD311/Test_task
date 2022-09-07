@@ -7,17 +7,16 @@ use App\Interfaces\Host;
 
 final class Driver
 {
-    private array $config;
     private string $name;
     public function __construct(
         protected Host $db
     ){
-        app("db");
-        $this->config = config('database')['connections'];
     }
 
     /**
-     * @param string|null $driver
+     * @param string $name
+     * @param string $driver
+     * @param string $database
      * @throws Config
      */
     public function setDriver(string $name, string $driver, string $database)
@@ -25,9 +24,6 @@ final class Driver
         app('db');
         if(empty($this->newConfig = config('database')['connections'][$driver])) {
             throw new Config("Драйвер не установлен");
-        }
-        if(isset($this->config[$name])) {
-            $newConfig = $this->config[$driver];
         }
         $this->name = $name;
         $newConfig = config("database.connections.mysql");
