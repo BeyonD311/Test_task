@@ -17,5 +17,5 @@
 |
 */
 
-$router->get('/', "\App\Http\Controllers\TestController@test");
+$router->post('/api/files', "\App\Http\Controllers\FilesController@store");
 

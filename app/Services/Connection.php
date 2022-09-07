@@ -15,9 +15,13 @@ class Connection
         return $this;
     }
 
-    public function connection()
+    /**
+     * @param Host $host
+     * @return mixed
+     */
+    public function connection(Host $host)
     {
-        return $this->connection->connection();
+        return $this->connection->connection($host);
     }
 
     public function getOptions()

@@ -26,7 +26,43 @@
                         "description": "Показать файлы",
                         "content": {
                             "application/json": {
-
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "Название сервера",
+                                                        "example": "Asterisk"
+                                                    },
+                                                    "data": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "server_from": {
+                                                                "type": "integer",
+                                                                "example": 10,
+                                                                "description": "количество файлов на сервере"
+                                                            },
+                                                            "download": {
+                                                                "type": "string",
+                                                                "example": 10,
+                                                                "description": "Количество загруженных файлов с сервера"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
