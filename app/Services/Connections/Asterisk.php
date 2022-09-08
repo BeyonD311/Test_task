@@ -7,7 +7,6 @@ use App\Services\Connections\Options\DB;
 use App\Services\Driver;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Query\Builder;
-use JetBrains\PhpStorm\Pure;
 
 class Asterisk implements ConnectionInterface
 {
@@ -30,7 +29,7 @@ class Asterisk implements ConnectionInterface
      * @param DB $db
      * @return string
      */
-    #[Pure] private function installingTable(DB $db): string
+    private function installingTable(DB $db): string
     {
         if(empty($db->getSchema())) {
             return 'asteriskcdrdb';

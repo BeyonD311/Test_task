@@ -7,7 +7,7 @@ class ServerConnections extends \Illuminate\Database\Eloquent\Model
     protected $fillable = [
         "id",
         "connection_id",
-        "ip",
+        "host",
         "port",
         "login",
         "pass",

@@ -3,6 +3,6 @@
 namespace App\Interfaces;
 interface ConnectionInterface
 {
-    public function connection(Host $host);
+    public function connection();
     public function getOptions(): array;
 }
