@@ -14,4 +14,9 @@ class Files extends Model
         "call_at",
         "load_at"
     ];
+
+    public function connection()
+    {
+        return $this->belongsTo(Connections::class, 'id', 'connection_id');
+    }
 }

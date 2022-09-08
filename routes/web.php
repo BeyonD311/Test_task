@@ -18,4 +18,5 @@
 */
 
 $router->post('/api/files', "\App\Http\Controllers\FilesController@store");
+$router->get('/api/connetions', "\App\Http\Controllers\ConnectionsController@index");
 
