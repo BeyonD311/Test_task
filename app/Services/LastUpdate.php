@@ -45,4 +45,10 @@ class LastUpdate implements \App\Interfaces\LastUpdate
             ]);
         }
 	}
+
+    public function getStringDate(int $connection_id): string
+    {
+        $last = ModelLastUpdate::where($this->typeConnection, '=', $connection_id)->first();
+        return $last->update;
+    }
 }

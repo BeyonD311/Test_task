@@ -9,6 +9,7 @@ use App\Services\Connections\Cisco;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use \App\Services\Connection as FacadeConnection;
 
 class FilesController extends Controller
 {
@@ -39,7 +40,8 @@ class FilesController extends Controller
                 "asterisk" => new Asterisk($info['database_connection']),
                 "cisco" => new Cisco($info['server_connection'])
             };
-
+            $query = new \App\Services\Query\Cisco($connection);
+            $query->getItems("2022-09-05", "2022-09-09")->current();
         } catch (ValidationException $validationException) {
             $result["status"] = "error";
             $result["message"] = $validationException->getMessage();

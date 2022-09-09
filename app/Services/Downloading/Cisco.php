@@ -7,7 +7,6 @@ use App\Interfaces\ConnectionInterface;
 use App\Services\Protocols\Http;
 use App\Services\Connections\Options\Server;
 use Illuminate\Support\Facades\Artisan;
-use \App\Services\Connection;
 use App\Exceptions\Connection as ConnectException;
 
 class Cisco extends DataService
@@ -21,10 +20,8 @@ class Cisco extends DataService
         protected Server $server
     )
     {
-        $http = new Connection();
-        $http->setConnection(new \App\Services\Connections\Cisco($this->server));
-        $this->connection = $http->connection();
-        $this->cookie = $http->getOptions();
+        $this->connection = new \App\Services\Connections\Cisco($this->server);
+        $this->cookie = $this->connection->getOptions();
         parent::__construct();
     }
 
