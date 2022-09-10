@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\Connection;
+use App\Services\Query\Asterisk as QueryAsterisk;
+use App\Services\Query\Cisco as QueryCisco;
 use App\Models\Connections;
 use App\Services\Connections\Asterisk;
 use App\Services\Connections\Cisco;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
-use \App\Services\Connection as FacadeConnection;
 
 class FilesController extends Controller
 {
@@ -37,11 +38,11 @@ class FilesController extends Controller
             $info = $this->connections->infoFromConnection($res['connection']);
             $files = $this->connections->getWorkingConnection($res);
             $connection = match(strtolower($info['name'])) {
-                "asterisk" => new Asterisk($info['database_connection']),
-                "cisco" => new Cisco($info['server_connection'])
+                "asterisk" => new QueryAsterisk(new Asterisk($info['database_connection'])),
+                "cisco" => new QueryCisco(new Cisco($info['server_connection']))
             };
-            $query = new \App\Services\Query\Cisco($connection);
-            $query->getItems("2022-09-05", "2022-09-09")->current();
+            $items = $connection->getItems("2022-09-05", "2022-09-09");
+            dd($items);
         } catch (ValidationException $validationException) {
             $result["status"] = "error";
             $result["message"] = $validationException->getMessage();
