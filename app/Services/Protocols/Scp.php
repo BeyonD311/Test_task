@@ -10,7 +10,7 @@ class Scp
 {
     use SerializesModels;
 
-    const DOWNLOAD = "/var/www/storage/";
+    protected string $download = "/var/www/storage/";
 
     protected string $pathDownload;
 
@@ -28,22 +28,18 @@ class Scp
         return $this;
     }
 
-    private function makeShhPass(): string
+    protected function makeShhPass(): string
     {
         return "sshpass -p '".$this->server->getPass()."'";
     }
 
-    /**
-     * Формирование scp команды
-     * @return string
-     */
-    private function makeScp(): string
+    protected function makeScp(): string
     {
         return "scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -rq ".
             $this->server->getLogin().
             "@".$this->server->getHost().
             ":".$this->pathDownload.
-            " ".self::DOWNLOAD.$this->to;
+            " ".$this->download.$this->to;
     }
 
     public function getServer(): Host
@@ -53,12 +49,24 @@ class Scp
 
     public function download()
     {
+        $this->checkOutPath();
         $exec = $this->makeShhPass() ." ".$this->makeScp();
         $output = [];
         $code = 0;
         exec($exec, $output, $code);
-        if($code != 0) {
-            throw new Connection(json_encode($output));
+        if ($code != 0) {
+            if ($code == 1) {
+                $output = "File not found";
+            }
+            throw new Connection(json_encode($output, JSON_PRETTY_PRINT), 404);
         }
+    }
+
+    protected function checkOutPath()
+    {
+        if(strpos($this->pathDownload, ".gz") === false) {
+            return;
+        }
+        $this->to = "temp";
     }
 }

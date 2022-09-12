@@ -34,13 +34,13 @@ class LastUpdate implements \App\Interfaces\LastUpdate
 	public function updateOrCreate(int $id, string $time): void
 	{
         $last = ModelLastUpdate::where($this->typeConnection, '=', $id)->first();
-        $time = date('Y-m-d H:i:s', strtotime($time));
+        $time = date('Y-m-d H:i:s.u', strtotime($time));
         if(isset($last)) {
             $last->update = $time;
             $last->save();
         } else {
             ModelLastUpdate::create([
-                $this->typeConnection = $id,
+                $this->typeConnection => $id,
                 'update' => $time
             ]);
         }

@@ -42,7 +42,8 @@ class DownloadJob extends Job
         try {
              $instance = match (strtolower($this->name)) {
                 'asterisk' => new $instance($this->server, $this->database),
-                'cisco' => new $instance($this->server)
+                'cisco' => new $instance($this->server),
+                'uc' => new $instance($this->server, $this->database)
              };
              $instance->download();
         } catch (\Throwable $exception) {
