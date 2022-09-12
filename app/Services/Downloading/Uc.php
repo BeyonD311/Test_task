@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Services\DataService;
+namespace App\Services\Downloading;
 
-use App\Services\Connections\UcScp;
+use App\Services\Protocols\UcScp;
 use App\Services\Driver;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
@@ -18,10 +18,12 @@ class Uc extends Asterisk
         $driver = new Driver($this->db);
         $driver->setDriver('uc', 'mysql','voicetech');
         $date = date('Y-m-d H:i:s', $this->getInstanceLastUpdate()->getTimestamp($this->db->getId()));
+        $timeZone = new \DateTimeZone("Europe/Moscow");
+        $dateNow = new \DateTime('now', $timeZone);
         $items = $db->connection($driver->getConfig())->table('phone_cdr')
             ->where([
                 ['end','>=', date("Y-m-d 00:00:00", strtotime($date))],
-                ['end','<=', date('Y-m-d H:i:s')],
+                ['end','<=', $dateNow->format('Y-m-d H:i:s')],
                 ['disposition','=','ANSWERED']
             ])
             ->orderBy('calldate', 'DESC')
@@ -43,7 +45,7 @@ class Uc extends Asterisk
                     $mp3 = "$tempName.mp3";
                     unset($tempName);
                     if(!file_exists("/var/www/storage/audio/".$wav) && !file_exists("/var/www/storage/audio/".$mp3)) {
-                        $path = self::path.$item->soundFile.".wav";
+                        $path = self::$path.$item->soundFile.".wav";
                         $scp->setPathDownload($path);
                         $scp->download();
                         Artisan::call('file', [

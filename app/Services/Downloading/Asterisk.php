@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Artisan;
 
 class Asterisk extends DataService
 {
-    private static string $path;
+    protected static string $path;
 
     protected string $lastUpdateConnection = "database_connection_id";
 

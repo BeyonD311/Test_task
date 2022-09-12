@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Files;
 use App\Services\Connections\Options\DB;
 use App\Services\Downloading\Asterisk;
 use App\Services\Connections\Options\Server;
@@ -29,21 +30,31 @@ class Test extends \Illuminate\Console\Command
      */
     public function handle()
     {
-        $db = new DB();
-        $db->setHost('10.3.0.10')
-            ->setPort('3306')
-            ->setLogin('user')
-            ->setPass('P@ssw0rd1')
-            ->setId(1);
-        /* $server = new Server();
-        $server->setHost("10.3.0.10")
-            ->setLogin('root')
-            ->setPass('!DLP$tend%');
-        $asterisk = new Asterisk($server,$db);
-        $asterisk->download();*/
-
-        $aster = new \App\Services\Connections\Asterisk($db);
-
+        $audioDir = "/var/www/storage/audio";
+        $callInfoDir = "/var/www/storage/callInfo/";
+        $readDir = new \DirectoryIterator($audioDir);
+        while ($readDir->valid())
+        {
+            $item = $readDir->current();
+            $jsonName = preg_replace("/\.[a-z0-9]*$/", ".json", $item->getFilename());
+            if(file_exists($callInfoDir.$jsonName)) {
+                $file = Files::where([
+                    ['name', "=", $item->getFilename()]
+                ])->first();
+                if($file === null) {
+                    $info = json_decode(file_get_contents($callInfoDir.$jsonName), true);
+                    $connection_id = $info['service'] === 'asterisk' ? 1 : 2;
+                    Files::create([
+                        'name' => $item->getFilename(),
+                        'connections_id' => $connection_id,
+                        'exception' => 'empty',
+                        'call_at' => $info['calldate'],
+                        'load_at' => $info['calldate']
+                    ]);
+                }
+            }
+            $readDir->next();
+        }
         return 0;
     }
 }
