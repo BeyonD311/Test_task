@@ -35,7 +35,9 @@ class UcScp extends Scp
                 } else {
                     $copy = "false";
                 }
-                unlink($file);
+                Log::info("Copy: $copy");
+                $unlink = unlink($file);
+                Log::info("Copy: $unlink");
             }
         }
     }
