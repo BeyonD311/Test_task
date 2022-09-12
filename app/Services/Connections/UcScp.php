@@ -18,7 +18,7 @@ class UcScp extends Scp
             parent::setPathDownload($path);
             parent::download();
             $file = $this->download.$this->to."/".implode("",array_slice(explode("/", $path), -1));
-            $newFile = $this->download."/audio/".str_replace(".gz", "",
+            $newFile = $this->download."audio/".str_replace(".gz", "",
                     implode("",array_slice(explode("/", $path), -1)));
             Log::info($file."\n".$newFile);
             if(file_exists($file)) {

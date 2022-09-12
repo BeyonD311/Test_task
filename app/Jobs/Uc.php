@@ -36,7 +36,8 @@ class Uc extends Job
 
     private function saveFileInfo($item)
     {
-        $name = preg_replace("/\.[0-9a-z]+$/", "", $item->soundFile);
+        $file = explode("/",$item->soundFile);
+        $name = preg_replace("/\.[0-9a-z]+$/", "", $file[1]);
         $result = [
             "service" => 'uc',
             "calldate" => $item->calldate,
