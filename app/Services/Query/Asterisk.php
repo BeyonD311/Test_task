@@ -51,7 +51,7 @@ class Asterisk extends Query
                 break;
             }
             foreach ($items as $item) {
-                yield $item;
+                yield $item->recordingfile => $item;
             }
             $page++;
         }

@@ -43,8 +43,8 @@ class FilesController extends Controller
             };
             $items = $connection->getItems("2022-09-05", "2022-09-09");
             $filesFromConnections = [];
-            foreach ($items as $item) {
-                $filesFromConnections[] = $item;
+            foreach ($items as $file => $item) {
+                dump($file);
             }
             dd($filesFromConnections);
         } catch (ValidationException $validationException) {
