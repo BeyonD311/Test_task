@@ -36,17 +36,18 @@ class FilesController extends Controller
             ]);
             app('db');
             $info = $this->connections->infoFromConnection($res['connection']);
-            $files = $this->connections->getWorkingConnection($res);
+            $connectionResult = $this->connections->getWorkingConnection($res);
             $connection = match(strtolower($info['name'])) {
                 "asterisk" => new QueryAsterisk(new Asterisk($info['database_connection'])),
                 "cisco" => new QueryCisco(new Cisco($info['server_connection']))
             };
-            $items = $connection->getItems("2022-09-05", "2022-09-09");
-            $filesFromConnections = [];
-            foreach ($items as $file => $item) {
-                dump($file);
+            $items = $connection->getItems($res['date_from'], $res['date_to']);
+            $connectionResult['files_from_server'] = 0;
+            foreach ($items as $item) {
+                $connectionResult['files_from_server']++;
             }
-            dd($filesFromConnections);
+            $connectionResult['download_files'] = count($connectionResult['files']);
+            $result['data'] = $connectionResult;
         } catch (ValidationException $validationException) {
             $result["status"] = "error";
             $result["message"] = $validationException->getMessage();

@@ -32,10 +32,10 @@ class Asterisk extends Job
             "call_at" => $this->item->calldate
         ];
         try {
-            $path = $_SERVER['PWD']."/storage/audio";
+            $path = "/var/www/storage/audio";
             $this->scp->download();
-            $this->saveFileInfo($this->item);
             File::rename($path."/".$this->item->recordingfile, $path."/".$this->outputName);
+            $this->saveFileInfo($this->item);
             $filesOptions["exception"] = "empty";
             $filesOptions["load_at"] = date("Y-m-d H:i:s");
         } catch (\Throwable $exception) {

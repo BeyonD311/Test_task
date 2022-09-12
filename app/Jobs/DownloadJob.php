@@ -4,6 +4,7 @@ namespace App\Jobs;
 use App\Interfaces\Host;
 use App\Services\Connections\Options\DB;
 use App\Services\Connections\Options\Server;
+use Illuminate\Support\Facades\Log;
 
 class DownloadJob extends Job
 {

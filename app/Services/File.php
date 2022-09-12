@@ -9,7 +9,9 @@ class File
 {
     public static function rename(string $from, string $to): void
     {
-        if(!file_exists($from) && !rename($from, $to)) {
+        $renameStatus = rename($from, $to);
+        Log::info("rename: $renameStatus");
+        if(!file_exists($from) && !$renameStatus) {
             Log::error("Файл не переименован ".$from);
         }
     }
