@@ -20,6 +20,7 @@ class UcScp extends Scp
             $file = $this->download.$this->to."/".implode("",array_slice(explode("/", $path), -1));
             $newFile = $this->download."/audio/".str_replace(".gz", "",
                     implode("",array_slice(explode("/", $path), -1)));
+            Log::info($file."\n".$newFile);
             if(file_exists($file)) {
                 $code = 0;
                 $output = [];
@@ -28,7 +29,12 @@ class UcScp extends Scp
                     throw new \Exception("Не получается разархивировать файл", 500);
                 }
                 $file = str_replace(".gz", "", $file);
-                copy($file, $newFile);
+                $copy = copy($file, $newFile);
+                if($copy) {
+                    $copy = "try";
+                } else {
+                    $copy = "false";
+                }
                 unlink($file);
             }
         }
