@@ -67,7 +67,7 @@ class Asterisk extends Job
         file_put_contents("/var/www/storage/callInfo/$name.json", print_r(json_encode($result, JSON_PRETTY_PRINT), true));
     }
 
-    private function buildOutputName(): string
+    protected function buildOutputName(): string
     {
         $name = explode('.', $this->item->recordingfile);
         $expansion = array_pop($name);
