@@ -3,6 +3,7 @@
 namespace App\Services\Connections;
 
 use App\Exceptions\Connection;
+use Illuminate\Support\Facades\Log;
 
 class UcScp extends Scp
 {
@@ -20,7 +21,6 @@ class UcScp extends Scp
             $newFile = $this->download."/audio/".str_replace(".gz", "",
                     implode("",array_slice(explode("/", $path), -1)));
             if(file_exists($file)) {
-                dump($file);
                 $code = 0;
                 $output = [];
                 exec("gunzip $file", $output, $code);
