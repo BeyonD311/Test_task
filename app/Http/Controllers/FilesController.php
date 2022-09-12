@@ -42,7 +42,11 @@ class FilesController extends Controller
                 "cisco" => new QueryCisco(new Cisco($info['server_connection']))
             };
             $items = $connection->getItems("2022-09-05", "2022-09-09");
-            dd($items);
+            $filesFromConnections = [];
+            foreach ($items as $item) {
+                $filesFromConnections[] = $item;
+            }
+            dd($filesFromConnections);
         } catch (ValidationException $validationException) {
             $result["status"] = "error";
             $result["message"] = $validationException->getMessage();
