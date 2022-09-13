@@ -6,6 +6,7 @@ use App\Models\Files;
 use App\Services\Connections\Options\DB;
 use App\Services\Downloading\Asterisk;
 use App\Services\Connections\Options\Server;
+use Illuminate\Support\Facades\Log;
 
 class Test extends \Illuminate\Console\Command
 {
@@ -37,21 +38,31 @@ class Test extends \Illuminate\Console\Command
         {
             $item = $readDir->current();
             $jsonName = preg_replace("/\.[a-z0-9]*$/", ".json", $item->getFilename());
-            if(file_exists($callInfoDir.$jsonName)) {
-                $file = Files::where([
-                    ['name', "=", $item->getFilename()]
-                ])->first();
-                if($file === null) {
-                    $info = json_decode(file_get_contents($callInfoDir.$jsonName), true);
-                    $connection_id = $info['service'] === 'asterisk' ? 1 : 2;
-                    Files::create([
-                        'name' => $item->getFilename(),
-                        'connections_id' => $connection_id,
-                        'exception' => 'empty',
-                        'call_at' => $info['calldate'],
-                        'load_at' => $info['calldate']
-                    ]);
-                }
+            if(!file_exists($callInfoDir.$jsonName)) {
+                $readDir->next();
+                continue;
+            }
+            $file = Files::where([
+                ['name', "=", $item->getFilename()]
+            ])->first();
+            if($file !== null) {
+                $readDir->next();
+                continue;
+            }
+            $info = json_decode(file_get_contents($callInfoDir.$jsonName), true);
+            if(!isset($info['service'])) {
+                $readDir->next();
+                continue;
+            }
+            if($file === null) {
+                $connection_id = $info['service'] === 'asterisk' ? 1 : 2;
+                Files::create([
+                    'name' => $item->getFilename(),
+                    'connections_id' => $connection_id,
+                    'exception' => 'empty',
+                    'call_at' => $info['calldate'],
+                    'load_at' => $info['calldate']
+                ]);
             }
             $readDir->next();
         }
