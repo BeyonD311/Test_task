@@ -2,6 +2,7 @@
 
 namespace App\Services\Query;
 
+use App\Exceptions\Connection;
 use App\Exceptions\Connection as ConnectException;
 
 class Cisco extends Query
@@ -10,17 +11,8 @@ class Cisco extends Query
     {
         $from = convertDateToMillisecond($from);
         $to = convertDateToMillisecond($to);
-        $response = $this->connection->connection()->send("POST", "queryService/query/getSessions", $this->makeQuery($from, $to));
-        $items = json_decode($response->response()->getBody()->getContents(), true);
-        if($items['responseCode'] < 2000 && $items['responseCode'] >= 3000) {
-            throw new ConnectException($items["responseMessage"], $items['responseCode']);
-        }
-
-        if(!isset($items['responseBody'])) {
-            return;
-        }
-
-        foreach ( $items['responseBody']['sessions'] as $item) {
+        $items = $this->crawlingPage($from, $to);
+        foreach ($items as $item) {
             yield $item;
         }
     }
@@ -37,13 +29,6 @@ class Cisco extends Query
                                 "fieldOperator" => "equals",
                                 "fieldValues" => [
                                     "CLOSED_NORMAL"
-                                ],
-                                "fieldConnector" => "OR"
-                            ],
-                            [
-                                "fieldOperator" => "equals",
-                                "fieldValues" => [
-                                    "CLOSED_ERROR"
                                 ]
                             ]
                         ],
@@ -58,8 +43,50 @@ class Cisco extends Query
                             ]
                         ]
                     ]
+                ],
+                "pageParameters" => [
+                    "offset" => $this->paginate['page'],
+                    "limit" => $this->paginate['size']
+                ],
+                "sortParameters" => [
+                    "byFieldName" => "sessionState",
+                    "order" => "CLOSED_NORMAL"
                 ]
             ]
         ];
+    }
+
+    public function getNumbersOfRecords(string $from, string $to): int
+    {
+        $from = convertDateToMillisecond($from);
+        $to = convertDateToMillisecond($to);
+        $total = 0;
+        $items = $this->crawlingPage($from, $to);
+        foreach ($items as $item) {
+            $total += count($item);
+        }
+        return $total;
+    }
+
+    /**
+     * @param int $from
+     * @param int $to
+     * @return \Generator
+     * @throws ConnectException
+     */
+    private function crawlingPage(int $from, int $to): \Generator
+    {
+        while (true) {
+            $query = $this->connection->connection()->send("POST", "queryService/query/getSessions", $this->makeQuery($from, $to));
+            $response = json_decode($query->response()->getBody()->getContents(), true);
+            if($response['responseCode'] == 2001) {
+                break;
+            }
+            if($response['responseCode'] < 2000 || $response['responseCode'] > 2001) {
+                throw new Connection("", 500);
+            }
+            $this->paginate['page'] += $this->paginate['size'];
+            yield $response['responseBody']['sessions'];
+        }
     }
 }

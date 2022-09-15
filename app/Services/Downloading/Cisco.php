@@ -72,13 +72,6 @@ class Cisco extends DataService
                                 "fieldValues" => [
                                     "CLOSED_NORMAL"
                                 ],
-                                "fieldConnector" => "OR"
-                            ],
-                            [
-                                "fieldOperator" => "equals",
-                                "fieldValues" => [
-                                    "CLOSED_ERROR"
-                                ]
                             ]
                         ],
                         "paramConnector" => "AND"

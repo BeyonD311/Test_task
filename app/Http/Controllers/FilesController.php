@@ -32,7 +32,9 @@ class FilesController extends Controller
                 "date_to" => "required|date:after:date_from",
                 "connection" => "required|integer",
                 "sort_field" => "string",
-                "sort_direction" => "string"
+                "sort_direction" => "string",
+                "page" => "required|integer",
+                "size" => "required|integer"
             ]);
             app('db');
             $info = $this->connections->infoFromConnection($res['connection']);
@@ -41,12 +43,8 @@ class FilesController extends Controller
                 "asterisk" => new QueryAsterisk(new Asterisk($info['database_connection'])),
                 "cisco" => new QueryCisco(new Cisco($info['server_connection']))
             };
-            $items = $connection->getItems($res['date_from'], $res['date_to']);
-            $connectionResult['files_from_server'] = 0;
-            foreach ($items as $item) {
-                $connectionResult['files_from_server']++;
-            }
-            $connectionResult['download_files'] = count($connectionResult['files']);
+            $connection->setPaginate(0, 100);
+            $connectionResult['files_from_server'] = $connection->getNumbersOfRecords($res['date_from'], $res['date_to']);
             $result['data'] = $connectionResult;
         } catch (ValidationException $validationException) {
             $result["status"] = "error";

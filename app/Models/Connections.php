@@ -43,20 +43,24 @@ class Connections extends \Illuminate\Database\Eloquent\Model
             ['id', '=', $options['connection']]
         ])->get()
             ->map(function ($item) use ($options) {
-                $items = $item->files()->where([
-                    ["call_at", ">=", $options['date_from']],
-                    ["call_at", "<=", $options['date_to']]
-                ])->get()->map(function ($item) {
-                    return [
+                $items = $item->files()
+                    ->where([
+                        ["call_at", ">=", $options['date_from']],
+                        ["call_at", "<=", $options['date_to']]
+                    ])->paginate($options['size'], page: $options['page']);
+                $resultItems = [];
+                foreach ($items->items() as $item) {
+                    $resultItems[] = [
                         "name" => $item->name,
-                        "connection_id" => $item->{"connection_id"},
+                        "connection_id" => $options['connection'],
                         "exception" => $item->exception
                     ];
-                });
+                }
                 return [
                     "name" => $item->name,
                     "id" => $item->id,
-                    "files" => $items->toArray()
+                    "files" => $resultItems,
+                    "download_files" => $items->total(),
                 ];
             })->toArray()[0];
     }
@@ -72,12 +76,12 @@ class Connections extends \Illuminate\Database\Eloquent\Model
         $connection = self::with(['serverConnection', 'databaseConnection'])->where([
             ['id', '=', $id]
         ])->first();
-        if(empty($connection)) {
+        if (empty($connection)) {
             throw new \App\Exceptions\Connection("Соединений не найдено", 404);
         }
         $db = $connection->getRelation('databaseConnection');
         $server = $connection->getRelation('serverConnection');
-        if(isset($db)) {
+        if (isset($db)) {
             $db = (new DB())
                 ->setPass($db->pass)
                 ->setLogin($db->login)
@@ -86,7 +90,7 @@ class Connections extends \Illuminate\Database\Eloquent\Model
                 ->setId($db->id)
                 ->setHost($db->host);
         }
-        if(isset($server)) {
+        if (isset($server)) {
             $server = (new Server())
                 ->setHost($server->host)
                 ->setPort($server->port)
