@@ -8,6 +8,7 @@ use App\Services\Protocols\Http;
 use App\Services\Connections\Options\Server;
 use Illuminate\Support\Facades\Artisan;
 use App\Exceptions\Connection as ConnectException;
+use Illuminate\Support\Facades\Log;
 
 class Cisco extends DataService
 {
@@ -27,14 +28,17 @@ class Cisco extends DataService
 
     public function download()
     {
+        app("db");
         $duration = 0;
-        $maxDate = $this->getInstanceLastUpdate()->getTimestamp($this->server->getId());
+        $maxDate = (int)$this->getInstanceLastUpdate()->getTimestamp($this->server->getId());
+        $timeZone = new \DateTimeZone('Europe/Moscow');
+        $date = new \DateTime('now', $timeZone);
         $flagEmpty = false;
-        foreach ($this->getItems($this->connection->connection()) as $item) {
-            if(isset($item['isEmpty']) && $item['isEmpty'] === true) {
-                $flagEmpty = true;
-                break;
-            }
+        $items = (new \App\Services\Query\Cisco($this->connection))
+            ->setPaginate(0, 1000)
+            ->getItems(date("Y-m-d H:i:s.u", $maxDate), $date->format("Y-m-d H:i:s.u"));
+        $maxDate = (int)($maxDate."000");
+        foreach ($items as $item) {
             if(empty($item['urls']['wavUrl'])) {
                 continue;
             }
@@ -54,50 +58,6 @@ class Cisco extends DataService
         if($flagEmpty === false) {
             $maxDate /= 1000;
             $this->getInstanceLastUpdate()->updateOrCreate($this->server->getId(), date('Y-m-d H:i:s', $maxDate));
-        }
-    }
-
-    private function getItems(Http $http): \Generator
-    {
-        $lastDate = $this->getInstanceLastUpdate()->getTimestamp($this->server->getId());
-
-        $itemsQuery = $http->send('post', 'queryService/query/getSessions', [
-            "json" => [
-                "requestParameters" => [
-                    [
-                        "fieldName" => "sessionState",
-                        "fieldConditions" => [
-                            [
-                                "fieldOperator" => "equals",
-                                "fieldValues" => [
-                                    "CLOSED_NORMAL"
-                                ],
-                            ]
-                        ],
-                        "paramConnector" => "AND"
-                    ],
-                    [
-                        "fieldName" => "sessionStartDate",
-                        "fieldConditions" => [
-                            [
-                                "fieldOperator" => "between",
-                                "fieldValues" => [($lastDate + 1) * 1000, (int)(time()."999")]
-                            ]
-                        ]
-                    ]
-                ]
-            ]
-        ]);
-        $items = json_decode($itemsQuery->response()->getBody()->getContents(), true);
-        if($items['responseCode'] < 2000 && $items['responseCode'] >= 3000) {
-            throw new ConnectException($items["responseMessage"], $items['responseCode']);
-        }
-        if(isset($items['responseBody'])) {
-            foreach ( $items['responseBody']['sessions'] as $item) {
-                yield $item;
-            }
-        } else {
-            yield ["isEmpty" => true];
         }
     }
 

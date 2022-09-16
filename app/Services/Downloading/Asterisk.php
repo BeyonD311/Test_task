@@ -13,6 +13,7 @@ class Asterisk extends DataService
 
     protected string $lastUpdateConnection = "database_connection_id";
 
+
     public function __construct(
         protected Host $server,
         protected Host $db
@@ -57,7 +58,7 @@ class Asterisk extends DataService
         $count = 100;
         while (true) {
             $items = $this->getItems($page, $count);
-            $page++;
+            $page += 1;
             if (empty($items)) {
                 break;
             }
@@ -69,10 +70,10 @@ class Asterisk extends DataService
 
     public function download()
     {
-        $scp = new Scp($this->server, 'audio');
+        $scp = new Scp($this->server, 'temp');
         $items = $this->crawlingPages();
         if(!empty($items->current())) {
-            $this->getInstanceLastUpdate()->updateOrCreate($this->db->getId(), $items->current()->calldate);
+            $date = $items->current()->calldate;
             foreach ($items as $item) {
                 if($item->recordingfile != "" && $this->checkFileExists($item->recordingfile)) {
                     $scp->setPathDownload(self::$path.date("Y/m/d", strtotime($item->calldate)). "/".$item->recordingfile);
@@ -83,6 +84,7 @@ class Asterisk extends DataService
                     ]);
                 }
             }
+            $this->getInstanceLastUpdate()->updateOrCreate($this->db->getId(), $date);
         }
     }
 

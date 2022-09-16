@@ -10,6 +10,8 @@ class Cisco extends Job
     protected $context;
     protected $item;
 
+    public $timeout = 0;
+
     public function __construct($item, $context)
     {
         $this->context = $context;
@@ -26,11 +28,12 @@ class Cisco extends Job
         ];
         try {
             $getFile = file_get_contents($this->item['urls']['wavUrl'], context: stream_context_create($this->context));
-            $path = '/var/www/storage/audio/'.$name;
+            $path = '/var/www/storage/temp/'.$name;
             file_put_contents($path, print_r($getFile, true));
             $files["exception"] = "empty";
-            $files["load_at"] = date("Y-m-d H:i:s");
             $this->saveFileInfo();
+            copy($path, '/var/www/storage/audio/'.$name);
+            unlink($path);
         } catch (\Throwable $exception) {
             $files["exception"] = $exception;
             Log::error(json_encode($exception, JSON_PRETTY_PRINT));

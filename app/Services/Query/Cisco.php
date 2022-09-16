@@ -13,7 +13,9 @@ class Cisco extends Query
         $to = convertDateToMillisecond($to);
         $items = $this->crawlingPage($from, $to);
         foreach ($items as $item) {
-            yield $item;
+            foreach ($item as $i) {
+                yield $i;
+            }
         }
     }
 
@@ -68,12 +70,6 @@ class Cisco extends Query
         return $total;
     }
 
-    /**
-     * @param int $from
-     * @param int $to
-     * @return \Generator
-     * @throws ConnectException
-     */
     private function crawlingPage(int $from, int $to): \Generator
     {
         while (true) {

@@ -17,6 +17,8 @@ class Asterisk extends Job
     protected $item;
     protected string $outputName;
 
+    public $timeout = 0;
+
     public function __construct($item, $scp)
     {
         $this->scp = unserialize($scp);
@@ -32,12 +34,13 @@ class Asterisk extends Job
             "call_at" => $this->item->calldate
         ];
         try {
-            $path = "/var/www/storage/audio";
+            $path = "/var/www/storage/temp";
             $this->scp->download();
             File::rename($path."/".$this->item->recordingfile, $path."/".$this->outputName);
+            copy($path."/".$this->outputName, "/var/www/storage/audio/$this->outputName");
+            unlink($path."/".$this->outputName);
             $this->saveFileInfo($this->item);
             $filesOptions["exception"] = "empty";
-            $filesOptions["load_at"] = date("Y-m-d H:i:s");
         } catch (\Throwable $exception) {
             Log::error($exception->getMessage());
             $filesOptions["exception"] = $exception;

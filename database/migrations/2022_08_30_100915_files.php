@@ -19,7 +19,6 @@ return new class extends Migration
             $table->unsignedBigInteger('connections_id');
             $table->longText('exception');
             $table->timestamp('call_at');
-            $table->timestamp('load_at')->default(null);
             $table->timestamps();
         });
     }

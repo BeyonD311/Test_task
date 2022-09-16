@@ -5,6 +5,7 @@ namespace App\Services\Protocols;
 use App\Exceptions\Connection;
 use App\Interfaces\Host;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class Scp
 {
@@ -55,6 +56,8 @@ class Scp
         $code = 0;
         exec($exec, $output, $code);
         if ($code != 0) {
+            Log::info(json_encode($output, JSON_PRETTY_PRINT));
+            Log::info($code);
             if ($code == 1) {
                 $output = "File not found";
             }
