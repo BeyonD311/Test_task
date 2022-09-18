@@ -61,6 +61,8 @@ class Connections extends \Illuminate\Database\Eloquent\Model
                     "id" => $item->id,
                     "files" => $resultItems,
                     "download_files" => $items->total(),
+                    "page" => $items->currentPage(),
+                    "last_page" => $items->lastPage()
                 ];
             })->toArray()[0];
     }
