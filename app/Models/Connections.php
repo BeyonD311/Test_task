@@ -49,11 +49,11 @@ class Connections extends \Illuminate\Database\Eloquent\Model
                         ["call_at", "<=", $options['date_to']]
                     ])->paginate($options['size'], page: $options['page']);
                 $resultItems = [];
-                foreach ($items->items() as $item) {
+                foreach ($items->items() as $file) {
                     $resultItems[] = [
-                        "name" => $item->name,
+                        "name" => $file->name,
                         "connection_id" => $options['connection'],
-                        "exception" => $item->exception
+                        "exception" => $file->exception
                     ];
                 }
                 return [
