@@ -15,6 +15,8 @@ class Scp
 
     protected string $pathDownload;
 
+    protected $connect;
+
 
     public function __construct
     (
@@ -56,8 +58,9 @@ class Scp
         $code = 0;
         exec($exec, $output, $code);
         if ($code != 0) {
-            Log::info(json_encode($output, JSON_PRETTY_PRINT));
-            Log::info($code);
+            $logMessage = sprintf("Code: %d; Message: %s; \n Exec: %v",
+            $code, json_encode($output, JSON_PRETTY_PRINT), $exec);
+            Log::error($logMessage);
             if ($code == 1) {
                 $output = "File not found";
             }

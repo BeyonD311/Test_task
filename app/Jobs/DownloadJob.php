@@ -2,13 +2,13 @@
 
 namespace App\Jobs;
 use App\Interfaces\Host;
-use App\Services\Connections\Options\DB;
-use App\Services\Connections\Options\Server;
+use App\Models\Connections;
 use Illuminate\Support\Facades\Log;
 
 class DownloadJob extends Job
 {
     protected string $name;
+    protected int $id;
     protected Host $database;
     protected Host $server;
 
@@ -19,15 +19,10 @@ class DownloadJob extends Job
      *
      * @return void
      */
-    public function __construct($name, $server = [], $database = [])
+    public function __construct($name, $id)
     {
         $this->name = $name;
-        if(!empty($server)) {
-            $this->server = $this->createServer($server);
-        }
-        if(!empty($database)) {
-            $this->database = $this->databaseServerCreate($database);
-        }
+        $this->id = $id;
     }
 
     /**
@@ -37,41 +32,24 @@ class DownloadJob extends Job
      */
     public function handle()
     {
-        $nameDownloading = ucfirst(strtolower($this->name));
-        $instance = "App\Services\Downloading\\$nameDownloading";
         try {
-             $instance = match (strtolower($this->name)) {
-                'asterisk' => new $instance($this->server, $this->database),
-                'cisco' => new $instance($this->server),
-                'uc' => new $instance($this->server, $this->database)
-             };
+            app('db');
+            $nameDownloading = ucfirst(strtolower($this->name));
+            $instance = "App\Services\Downloading\\$nameDownloading";
+            $connect = Connections::infoFromConnection($this->id);
+            $instance = match (strtolower($this->name)) {
+                'asterisk' => new $instance($connect['server_connection'], $connect['database_connection']),
+                'cisco' => new $instance($connect['server_connection']),
+                'uc' => new $instance($connect['server_connection'], $connect['database_connection'])
+            };
              $instance->download();
         } catch (\Throwable $exception) {
+            Log::error(sprintf("Message: %s; \n Line: %d; \n File: %s",
+                $exception->getMessage(),
+                $exception->getFile(),
+                $exception->getFile()
+            ));
             $this->fail($exception);
         }
-    }
-
-
-    private function createServer(array $server): Host
-    {
-        $serverDto = new Server();
-        return $serverDto->setHost($server['host'])
-            ->setId($server['id'])
-            ->setPort($server['port'])
-            ->setLogin($server['login'])
-            ->setPass($server['pass'])
-            ->setConnectionId($server['connection_id']);
-    }
-
-    private function databaseServerCreate(array $database): Host
-    {
-        $databaseDto = new DB();
-        return $databaseDto->setHost($database['host'])
-            ->setPort($database['port'])
-            ->setLogin($database['login'])
-            ->setPass($database['pass'])
-            ->setId($database['id'])
-            ->setTable($database['table'])
-            ->setConnectionId($database['connection_id']);
     }
 }
