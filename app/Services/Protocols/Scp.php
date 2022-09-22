@@ -4,6 +4,7 @@ namespace App\Services\Protocols;
 
 use App\Exceptions\Connection;
 use App\Interfaces\Host;
+use App\Services\File;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
@@ -66,6 +67,9 @@ class Scp
             }
             throw new Connection(json_encode($output, JSON_PRETTY_PRINT), 404);
         }
+        $names = $this->buildOutputName();
+        File::rename($names['orig'], $names['name']);
+        return $names['name'];
     }
 
     protected function checkOutPath()
@@ -74,5 +78,19 @@ class Scp
             return;
         }
         $this->to = "temp";
+    }
+
+    protected function buildOutputName(): array
+    {
+        $name = explode("/", $this->pathDownload);
+        $origName = array_pop($name);
+        $name = explode(".", $origName);
+        $expansion = array_pop($name);
+        $name[] = array_pop($name)."-".$this->server->getConnectionId().$expansion;
+        unset($expansion, $connectionId);
+        return  [
+            "orig" => $this->download.$this->to.'/'.$origName,
+            "name" => $this->download.$this->to.'/'.implode('.', $name)
+        ];
     }
 }

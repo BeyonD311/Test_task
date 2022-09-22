@@ -23,7 +23,6 @@ class Asterisk extends Job
     {
         $this->scp = unserialize($scp);
         $this->item = $item;
-        $this->outputName = $this->buildOutputName();
     }
 
     public function handle()
@@ -34,13 +33,11 @@ class Asterisk extends Job
             "call_at" => $this->item->calldate
         ];
         try {
-            $path = "/var/www/storage/temp";
             $file = $this->scp->download();
             copy($file, "/var/www/storage/audio/$this->outputName");
             unlink($file);
             $this->saveFileInfo($this->item);
             $filesOptions["exception"] = "empty";
-
         } catch (\Throwable $exception) {
             Log::error($exception->getMessage());
             $filesOptions["exception"] = $exception;
@@ -49,6 +46,9 @@ class Asterisk extends Job
             $file = Files::where("name", "=", $this->outputName)->first();
             if(is_null($file)) {
                 Files::create($filesOptions);
+            } else {
+                $file->exception = $filesOptions["exception"];
+                $file->save();
             }
             unset($this->scp, $file);
             gc_collect_cycles();
@@ -68,18 +68,6 @@ class Asterisk extends Job
             "did" => $item->did
         ];
         file_put_contents("/var/www/storage/callInfo/$name.json", print_r(json_encode($result, JSON_PRETTY_PRINT), true));
-    }
-
-    protected function buildOutputName(): string
-    {
-        $name = explode('.', $this->item->recordingfile);
-        $expansion = array_pop($name);
-        $connectionId = $this->scp->getServer()->getConnectionId();
-        $name[] = array_pop($name)."-$connectionId";
-        $name[] = $expansion;
-        $name = implode('.', $name);
-        unset($expansion, $connectionId);
-        return  $name;
     }
 
 }
