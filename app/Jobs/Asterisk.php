@@ -35,12 +35,12 @@ class Asterisk extends Job
         ];
         try {
             $path = "/var/www/storage/temp";
-            $this->scp->download();
-            File::rename($path."/".$this->item->recordingfile, $path."/".$this->outputName);
-            copy($path."/".$this->outputName, "/var/www/storage/audio/$this->outputName");
-            unlink($path."/".$this->outputName);
+            $file = $this->scp->download();
+            copy($file, "/var/www/storage/audio/$this->outputName");
+            unlink($file);
             $this->saveFileInfo($this->item);
             $filesOptions["exception"] = "empty";
+
         } catch (\Throwable $exception) {
             Log::error($exception->getMessage());
             $filesOptions["exception"] = $exception;

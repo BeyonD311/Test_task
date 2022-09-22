@@ -5,6 +5,7 @@ namespace App\Services\Downloading;
 use App\Services\Protocols\Scp;
 use App\Services\Driver;
 use App\Services\Connections\Options\Host;
+use App\Services\Protocols\ScpSsh2;
 use Illuminate\Support\Facades\Artisan;
 
 class Asterisk extends DataService
@@ -27,7 +28,7 @@ class Asterisk extends DataService
     {
         $db = app('db');
         $driver = new Driver($this->db);
-        $driver->setDriver('asterisk', 'mysql','asteriskcdrdb');
+        $driver->setDriver('asterisk-'.$this->db->getId(), 'mysql','asteriskcdrdb');
         $date = date('Y-m-d H:i:s', $this->getInstanceLastUpdate()->getTimestamp($this->db->getId()));
         /**
          * @var \Illuminate\Database\Query\Builder $items
@@ -40,7 +41,6 @@ class Asterisk extends DataService
             ['cdr.disposition', '=', "ANSWERED"],
             ['cdr.recordingfile', '!=', null]
         ];
-
         $items = $db->connection($driver->getConfig())->table('cdr')
             ->where($where)
             ->groupBy('cdr.linkedid')
