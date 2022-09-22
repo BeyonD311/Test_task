@@ -70,7 +70,7 @@ class Asterisk extends DataService
 
     public function download()
     {
-        $scp = new Scp($this->server, 'temp');
+        $scp = new ScpSsh2($this->server, 'temp');
         $items = $this->crawlingPages();
         if(!empty($items->current())) {
             $date = $items->current()->calldate;
