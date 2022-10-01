@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\Connection;
+use App\Models\Files;
 use App\Services\Query\Asterisk as QueryAsterisk;
 use App\Services\Query\Cisco as QueryCisco;
 use App\Models\Connections;
@@ -59,5 +60,30 @@ class FilesController extends Controller
         }
 
         return new JsonResponse($result, $code);
+    }
+
+    public function files(Request $request)
+    {
+        $fields = [
+            "date_from" => "date",
+            "date_to" => "date:after:date_from",
+            "connection" => "array",
+            "sort_field" => "string",
+            "sort_direction" => "string",
+            "src" => "string",
+            "dst" => "string",
+            "duration" => "integer",
+            "page" => "required|integer",
+            "size" => "required|integer"
+        ];
+        $res = $this->validate($request, $fields);
+        foreach ($fields as $field => $rules) {
+            if(empty($res[$field])) {
+                $res[$field] = "";
+            }
+        }
+        app("db");
+        $items = Files::getFiles($res);
+        return new JsonResponse($items);
     }
 }

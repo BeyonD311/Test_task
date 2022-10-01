@@ -42,7 +42,7 @@ class ScpSsh2 extends Scp
     public function download(): string
     {
         $this->connect();
-        $pathDownload = $this->download.$this->to.$this->generateOutputName();
+        $pathDownload = $this->download.$this->to."/".$this->generateOutputName();
         if(!ssh2_scp_recv($this->connect, $this->pathDownload, $pathDownload)) {
             throw new Connection("При загрузке файла произошла ошибка");
         }
@@ -59,8 +59,8 @@ class ScpSsh2 extends Scp
         $name = array_pop($sliceName);
         $name = explode(".", $name);
         $extension = array_pop($name);
-        $name[] = "-".$this->server->getConnectionId().".".$extension;
+        $name = implode(".", $name)."-".$this->server->getConnectionId().".".$extension;
         unset($sliceName,$extension);
-        return implode(".", $name);
+        return $name;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\CallInfo;
 use Illuminate\Support\Facades\Log;
 use App\Models\Files;
 
@@ -9,8 +10,9 @@ class Cisco extends Job
 {
     protected $context;
     protected $item;
+    protected $options;
 
-    public $timeout = 0;
+    public $timeout = 9999;
 
     public function __construct($item, $context)
     {
@@ -31,7 +33,7 @@ class Cisco extends Job
             $path = '/var/www/storage/temp/'.$name;
             file_put_contents($path, print_r($getFile, true));
             $files["exception"] = "empty";
-            $this->saveFileInfo();
+            $this->options = $this->saveFileInfo();
             copy($path, '/var/www/storage/audio/'.$name);
             unlink($path);
         } catch (\Throwable $exception) {
@@ -40,13 +42,19 @@ class Cisco extends Job
         } finally {
             $file = Files::where("name", "=", $name)->first();
             if(is_null($file)) {
-                Files::create($files);
+                $file = Files::create($files);
+                CallInfo::create([
+                    "file_id" => $file->id,
+                    "src" => $this->options['src'],
+                    "dst" => $this->options['dst'] == null ? "empty":$this->item['dst'],
+                    "duration" => $this->options['duration']
+                ]);
             }
         }
 
     }
 
-    private function saveFileInfo()
+    private function saveFileInfo(): array
     {
         $result = [
             'service' => 'cisco',
@@ -57,6 +65,7 @@ class Cisco extends Job
         ];
         $result = array_merge($result, $this->generatePhone($this->item['tracks']));
         file_put_contents('/var/www/storage/callInfo/'.md5($this->item['urls']['wavUrl'])."-".$this->item['connection_id'].".json", print_r(json_encode($result, JSON_PRETTY_PRINT), true));
+        return $result;
     }
 
     private function generatePhone(array $tracks): array

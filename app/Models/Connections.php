@@ -73,7 +73,7 @@ class Connections extends \Illuminate\Database\Eloquent\Model
      * @return array
      * @throws \App\Exceptions\Connection
      */
-    public static function infoFromConnection(int $id): array
+    public static function infoFromConnection(int $id = 0): array
     {
         $connection = self::with(['serverConnection', 'databaseConnection'])->where([
             ['id', '=', $id]

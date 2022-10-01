@@ -16,13 +16,13 @@ class TestController extends Controller
 
     public function test() {
         app('db');
-        $info = $this->connections->infoFromConnection(1);
-        /*$connection = match(strtolower($info['name'])) {
-            "asterisk" => new QueryAsterisk(new Asterisk($info['database_connection'])),
-            "cisco" => new QueryCisco(new Cisco($info['server_connection']))
-        };*/
-        $asterisk = new \App\Services\Downloading\Asterisk($info['server_connection'], $info['database_connection']);
-        $asterisk->download();
+        $info = $this->connections->infoFromConnection(2);
+        $cisco = new Cisco($info['server_connection']);
+        $query = new \App\Services\Query\Cisco($cisco);
+        $query->setPaginate(1,10);
+        foreach ($query->getItems("2022-01-01", "2022-12-31") as $key => $file) {
+            dump($key);
+        }
     }
 
     //

@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\CallInfo;
 use App\Models\Files;
 use App\Services\Protocols\Scp;
 use App\Services\File;
@@ -17,7 +18,7 @@ class Asterisk extends Job
     protected $item;
     protected string $outputName;
 
-    public $timeout = 0;
+    public $timeout = 9999;
 
     public function __construct($item, $scp)
     {
@@ -28,14 +29,19 @@ class Asterisk extends Job
     public function handle()
     {
         $filesOptions = [
-            "name" => $this->outputName,
             "connections_id" => $this->scp->getServer()->getConnectionId(),
             "call_at" => $this->item->calldate
         ];
         try {
             $file = $this->scp->download();
-            copy($file, "/var/www/storage/audio/$this->outputName");
+            $fileName = explode("/", $file);
+            $this->outputName = array_pop($fileName);
+            array_pop($fileName);
+            $fileName[] = "audio";
+            $fileName[] = $this->outputName;
+            copy($file, implode("/", $fileName));
             unlink($file);
+            $filesOptions["name"] = $this->outputName;
             $this->saveFileInfo($this->item);
             $filesOptions["exception"] = "empty";
         } catch (\Throwable $exception) {
@@ -45,11 +51,17 @@ class Asterisk extends Job
         } finally {
             $file = Files::where("name", "=", $this->outputName)->first();
             if(is_null($file)) {
-                Files::create($filesOptions);
+                $file = Files::create($filesOptions);
             } else {
                 $file->exception = $filesOptions["exception"];
                 $file->save();
             }
+            CallInfo::create([
+                "file_id" => $file->id,
+                "src" => $this->item->src,
+                "dst" => $this->item->dst,
+                "duration" => $this->item->duration
+            ]);
             unset($this->scp, $file);
             gc_collect_cycles();
         }

@@ -17,7 +17,8 @@
 |
 */
 
-$router->post('/api/files', "\App\Http\Controllers\FilesController@store");
+$router->post('/api/files/connection', "\App\Http\Controllers\FilesController@store");
+$router->post('/api/files', "\App\Http\Controllers\FilesController@files");
 $router->get('/api/connetions', "\App\Http\Controllers\ConnectionsController@index");
 $router->get("/", "\App\Http\Controllers\TestController@test");
 
