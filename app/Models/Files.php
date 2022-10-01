@@ -50,6 +50,17 @@ class Files extends Model
         if(!empty($where)) {
             $instance = $instance->where($where);
         }
+        if($array['sort_field'] != "") {
+            $direction =  "asc";
+            if($array["sort_direction"] != "") {
+                if(strtolower($array["sort_direction"]) !== "asc" && strtolower($array["sort_direction"]) !== "desc") {
+                    $direction = 'asc';
+                } else {
+                    $direction = strtolower($array["sort_direction"]);
+                }
+            }
+            $instance = $instance->orderBy($array['sort_field'], $direction);
+        }
         $instance = $instance->paginate($array['size'], page: $array['page']);
         foreach ($instance->items() as &$item) {
             $info = $item->callInfo;
