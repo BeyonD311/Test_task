@@ -72,6 +72,7 @@ class Files extends Model
             $item->src = $info->src;
             $item->dst = $info->dst;
             $item->duration = $info->duration;
+            $item->file = config('filesystems.disks.audio.url')."/$item->name";
         }
         return [
             "paginate" => [

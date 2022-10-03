@@ -116,6 +116,13 @@ $app->withFacades();
 
 $app->configure('filesystems');
 
+config(['filesystems.disks.audio' => [
+    'driver' => 'local',
+    'root' => storage_path('audio'),
+    'url' => env('APP_URL').'/audio',
+    'visibility' => 'public',
+]]);
+
 if(!function_exists("convertDateToMillisecond")) {
     function convertDateToMillisecond(string $date): int {
         $time = new \DateTime($date);
