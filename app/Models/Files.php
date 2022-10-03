@@ -64,8 +64,7 @@ class Files extends Model
             $array['sort_field'] = "call_at";
             $array["sort_direction"] = "desc";
         }
-        $instance = $instance->orderBy($array['sort_field'], $array["sort_direction"]);
-
+        $instance = $instance->groupBy('id')->orderBy($array['sort_field'], $array["sort_direction"]);
         $instance = $instance->paginate($array['size'], page: $array['page']);
         foreach ($instance->items() as &$item) {
             $info = $item->callInfo;

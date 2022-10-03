@@ -45,6 +45,7 @@ services:
             - "3319:3306"
         volumes:
             - ./mysql-custom-data:/var/lib/mysql
+            - ./docker/mysql/conf.d:/etc/mysql/conf.d/
         environment:
             MYSQL_DATABASE: ${DB_DATABASE}
             MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
