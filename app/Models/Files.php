@@ -102,10 +102,10 @@ class Files extends Model
     {
         $result = [];
         if($src !== "") {
-            $result[] = ['call_info.src', '=', $src];
+            $result[] = ['call_info.src', 'like', $src.'%'];
         }
         if($dst !== "") {
-            $result[] = ["dst", "=", $dst];
+            $result[] = ["dst", "like", $dst.'%'];
         }
         if($duration !== "") {
             $result[] = ["duration", "=", $duration];
