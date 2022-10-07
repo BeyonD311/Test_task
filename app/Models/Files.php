@@ -95,10 +95,10 @@ class Files extends Model
             }
         }
         if($date_from !== "") {
-            $result[] = ['call_at', '>=', $date_from];
+            $result[] = ['call_at', '>=', date('Y-m-d H:i:s', strtotime($date_from))];
         }
         if($date_to !== "") {
-            $result[] = ['call_at', '<=', $date_to];
+            $result[] = ['call_at', '<=', date('Y-m-d H:i:s', strtotime($date_to))];
         }
         return $result;
     }
