@@ -22,6 +22,7 @@ class Cisco extends DataService
     )
     {
         $this->connection = new \App\Services\Connections\Cisco($this->server);
+        $this->connection->connection();
         $this->cookie = $this->connection->getOptions();
         parent::__construct();
     }
@@ -64,19 +65,11 @@ class Cisco extends DataService
     private function fileDownload(array $item)
     {
         $context = [
-            'http' => [
-                'method' => 'GET',
-                'header' => [
-                    'Cookie: JSESSIONID='.$this->cookie['JSESSIONID'],
-                    'Authorization: Basic '.base64_encode($this->server->getLogin().':'.$this->server->getPass()),
-                    'Content-type: audio/basic'
-                ]
+            'headers' => [
+                'Cookie' => 'JSESSIONID='.$this->cookie['JSESSIONID'],
+                'Authorization' => 'Basic '.base64_encode($this->server->getLogin().':'.$this->server->getPass()),
             ],
-            'ssl' => [
-                'verify_peer' => false,
-                'verify_peer_name' => false,
-                'allow_self_signed' => true
-            ]
+            'verify' => false,
         ];
         Artisan::call('file', [
             'connections' => $context,

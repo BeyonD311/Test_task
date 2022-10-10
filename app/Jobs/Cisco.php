@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\CallInfo;
+use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
 use App\Models\Files;
 
@@ -29,13 +30,16 @@ class Cisco extends Job
             "connections_id" => $this->item['connection_id']
         ];
         try {
-            $getFile = file_get_contents($this->item['urls']['wavUrl'], context: stream_context_create($this->context));
-            $path = '/var/www/storage/temp/'.$name;
-            file_put_contents($path, print_r($getFile, true));
+            $client = new Client([
+                'cookies' => true,
+            ]);
+            $f = \GuzzleHttp\Psr7\Utils::tryFopen('/var/www/storage/temp/'.$name, 'a+');
+            $this->context['save_to'] = $f;
+            $client->request('GET', $this->item['urls']['wavUrl'], $this->context);
             $files["exception"] = "empty";
             $this->options = $this->saveFileInfo();
-            copy($path, '/var/www/storage/audio/'.$name);
-            unlink($path);
+            copy('/var/www/storage/temp/'.$name, '/var/www/storage/audio/'.$name);
+            unlink('/var/www/storage/temp/'.$name);
         } catch (\Throwable $exception) {
             $files["exception"] = $exception;
             Log::error(json_encode($exception, JSON_PRETTY_PRINT));
