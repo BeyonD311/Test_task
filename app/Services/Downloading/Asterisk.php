@@ -28,7 +28,7 @@ class Asterisk extends DataService
     {
         $db = app('db');
         $driver = new Driver($this->db);
-        $driver->setDriver('asterisk-'.$this->db->getId(), 'mysql','asteriskcdrdb');
+        $driver->setDriver('asterisk', 'mysql','asteriskcdrdb');
         $date = date('Y-m-d H:i:s', $this->getInstanceLastUpdate()->getTimestamp($this->db->getId()));
         /**
          * @var \Illuminate\Database\Query\Builder $items

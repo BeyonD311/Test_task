@@ -25,7 +25,7 @@ final class Driver
         if(empty($this->newConfig = config('database')['connections'][$driver])) {
             throw new Config("Драйвер не установлен");
         }
-        $this->name = $name;
+        $this->name = "$name-{$this->db->getId()}";
         $newConfig = config("database.connections.mysql");
         $newConfig['driver'] = $driver;
         $newConfig['host'] = $this->db->getHost();
@@ -34,7 +34,7 @@ final class Driver
         $newConfig['password'] = $this->db->getPass();
         $newConfig['database'] = $database;
         $newConfig['strict'] = false;
-        config(['database.connections.'.$name => $newConfig]);
+        config(['database.connections.'.$this->name => $newConfig]);
     }
 
     public function getConfig(): string
