@@ -68,8 +68,7 @@ class Cisco extends DataService
             'headers' => [
                 'Cookie' => 'JSESSIONID='.$this->cookie['JSESSIONID'],
                 'Authorization' => 'Basic '.base64_encode($this->server->getLogin().':'.$this->server->getPass()),
-            ],
-            'verify' => false,
+            ]
         ];
         Artisan::call('file', [
             'connections' => $context,

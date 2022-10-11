@@ -31,7 +31,8 @@ class Cisco extends Job
         ];
         try {
             $client = new Client([
-                'cookies' => true,
+                'verify' => false,
+                'cookies' => true
             ]);
             $f = \GuzzleHttp\Psr7\Utils::tryFopen('/var/www/storage/temp/'.$name, 'a+');
             $this->context['save_to'] = $f;
@@ -47,13 +48,10 @@ class Cisco extends Job
             $file = Files::where("name", "=", $name)->first();
             if(is_null($file)) {
                 $file = Files::create($files);
-                if(!isset($this->options['dst'])) {
-                    $this->options['dst'] = "empty";
-                }
                 CallInfo::create([
                     "file_id" => $file->id,
                     "src" => $this->options['src'],
-                    "dst" =>  $this->item['dst'],
+                    "dst" => $this->options['dst'] == null ? "empty":$this->item['dst'],
                     "duration" => $this->options['duration']
                 ]);
             }
