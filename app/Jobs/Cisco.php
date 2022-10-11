@@ -36,7 +36,9 @@ class Cisco extends Job
             ]);
             $f = \GuzzleHttp\Psr7\Utils::tryFopen('/var/www/storage/temp/'.$name, 'w+');
             $this->context['save_to'] = $f;
-            $client->request('GET', $this->item['urls']['wavUrl'], $this->context);
+            $file = $client->request('GET', $this->item['urls']['wavUrl'], $this->context);
+            Log::info("Code: ". $file->getStatusCode());
+            Log::info("Body: ". $file->getBody()->getContents());
             $files["exception"] = "empty";
             $this->options = $this->saveFileInfo();
             copy('/var/www/storage/temp/'.$name, '/var/www/storage/audio/'.$name);
@@ -48,11 +50,12 @@ class Cisco extends Job
             $file = Files::where("name", "=", $name)->first();
             if(is_null($file)) {
                 $file = Files::create($files);
+                $info = $this->generatePhone($this->item['tracks']);
                 CallInfo::create([
                     "file_id" => $file->id,
-                    "src" => $this->options['src'],
-                    "dst" => $this->options['dst'] == null ? "empty":$this->item['dst'],
-                    "duration" => $this->options['duration']
+                    "src" => $info['src'],
+                    "dst" => $info['dst'] == null ? "empty":$info['dst'],
+                    "duration" => round($this->item['duration'] / 1000)
                 ]);
             }
         }
