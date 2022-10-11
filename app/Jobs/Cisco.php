@@ -34,7 +34,7 @@ class Cisco extends Job
                 'verify' => false,
                 'cookies' => true
             ]);
-            $f = \GuzzleHttp\Psr7\Utils::tryFopen('/var/www/storage/temp/'.$name, 'a+');
+            $f = \GuzzleHttp\Psr7\Utils::tryFopen('/var/www/storage/temp/'.$name, 'w+');
             $this->context['save_to'] = $f;
             $client->request('GET', $this->item['urls']['wavUrl'], $this->context);
             $files["exception"] = "empty";
