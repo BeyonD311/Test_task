@@ -47,10 +47,13 @@ class Cisco extends Job
             $file = Files::where("name", "=", $name)->first();
             if(is_null($file)) {
                 $file = Files::create($files);
+                if(!isset($this->options['dst'])) {
+                    $this->options['dst'] = "empty";
+                }
                 CallInfo::create([
                     "file_id" => $file->id,
                     "src" => $this->options['src'],
-                    "dst" => $this->options['dst'] == null ? "empty":$this->item['dst'],
+                    "dst" =>  $this->item['dst'],
                     "duration" => $this->options['duration']
                 ]);
             }

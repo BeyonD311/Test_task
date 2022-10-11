@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\Connections\Options\Server;
-use App\Services\Query\Asterisk as QueryAsterisk;
-use App\Services\Query\Cisco as QueryCisco;
-use App\Services\Connections\Asterisk;
-use App\Services\Connections\Cisco;
+
 use App\Models\Connections;
+use App\Services\Downloading\Cisco;
+use GuzzleHttp\Client;
 
 class TestController extends Controller
 {
@@ -16,13 +14,18 @@ class TestController extends Controller
 
     public function test() {
         app('db');
-        $info = $this->connections->infoFromConnection(2);
-        $cisco = new Cisco($info['server_connection']);
-        $query = new \App\Services\Query\Cisco($cisco);
-        $query->setPaginate(1,10);
-        foreach ($query->getItems("2022-01-01", "2022-12-31") as $key => $file) {
-            dump($key);
-        }
+        $client = new Client([
+            'cookies' => true,
+        ]);
+        $file = \GuzzleHttp\Psr7\Utils::tryFopen('/var/www/test.wav', 'a+');
+        $response = $client->request('GET', 'https://10.3.0.42:8446/recordedMedia/oramedia/wav/68183acf2e5461.wav', [
+            'verify' => false,
+            'headers' => [
+                'Cookie' => 'JSESSIONID=42B63F8D2B76E71CDCEE2AB77BEC7BD0',
+                'Authorization' => 'Basic bXMwMTpQQHNzdzByZDE='
+            ],
+            'save_to' => $file
+        ]);
     }
 
     //

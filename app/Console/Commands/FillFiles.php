@@ -36,11 +36,19 @@ class FillFiles extends \Illuminate\Console\Command
         $connections = Connections::where([["power", "=", true]])->get()->map(function ($connection) {
             return Connections::infoFromConnection($connection->id);
         })->toArray();
-        $result = $this->splitFiles($files, function ($items) {
+        $result = $this->splitFiles($files, function ($items)use($audioDir) {
             $result = [];
+            $now = strtotime(date('Y-m-d 00:00:00', time()));
             foreach ($items as $file) {
                 $splitFile = explode(".", $file);
                 $expansion = array_pop($splitFile);
+                if($this->checkAsterisk($file)) {
+                    if(fileatime($audioDir."/$file") >= $now) {
+                        $expansion = "wav";
+                    } else {
+                        $expansion = "mp3";
+                    }
+                }
                 $name = preg_replace("/\.?-\d*$/","",implode(".",$splitFile)).".$expansion";
                 $result[$name] = $file;
             }
@@ -100,8 +108,7 @@ class FillFiles extends \Illuminate\Console\Command
         $result = [];
 
         foreach ($files as $key => $item) {
-            $regExp = "/(\w*-)?(?:\d+-\d+)-(?:\d*\.)*/";
-            if(preg_match($regExp, $item) === 0) {
+            if(!$this->checkAsterisk($key)) {
                 $result[] = $item;
                 unset($files[$key]);
             }
@@ -130,5 +137,10 @@ class FillFiles extends \Illuminate\Console\Command
                 }
             }
         }
+    }
+
+    private function checkAsterisk(string $fileName): bool
+    {
+        return !(preg_match("/(\w*-)?(?:\d+-\d+)-(?:\d*\.)*/", $fileName) === 0);
     }
 }
