@@ -22,7 +22,6 @@ class Cisco extends DataService
     )
     {
         $this->connection = new \App\Services\Connections\Cisco($this->server);
-        $this->connection->connection();
         $this->cookie = $this->connection->getOptions();
         parent::__construct();
     }

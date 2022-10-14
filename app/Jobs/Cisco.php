@@ -34,18 +34,15 @@ class Cisco extends Job
                 'verify' => false,
                 'cookies' => true
             ]);
-            $f = \GuzzleHttp\Psr7\Utils::tryFopen('/var/www/storage/temp/'.$name, 'w+');
-            $this->context['save_to'] = $f;
             $file = $client->request('GET', $this->item['urls']['wavUrl'], $this->context);
-            Log::info("Code: ". $file->getStatusCode());
-            Log::info("Body: ". $file->getBody()->getContents());
+            file_put_contents('/var/www/storage/temp/'.$name, print_r($file->getBody()->getContents(), true));
             $files["exception"] = "empty";
             $this->options = $this->saveFileInfo();
             copy('/var/www/storage/temp/'.$name, '/var/www/storage/audio/'.$name);
             unlink('/var/www/storage/temp/'.$name);
         } catch (\Throwable $exception) {
             $files["exception"] = $exception;
-            Log::error(json_encode($exception, JSON_PRETTY_PRINT));
+            Log::error(json_encode($exception->getMessage(), JSON_PRETTY_PRINT));
         } finally {
             $file = Files::where("name", "=", $name)->first();
             if(is_null($file)) {
