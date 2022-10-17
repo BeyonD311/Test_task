@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Connections;
+namespace App\Services\Protocols;
 
 use App\Exceptions\Connection;
 use Illuminate\Support\Facades\Log;

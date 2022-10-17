@@ -9,8 +9,9 @@
         "guzzlehttp/guzzle": "^7.0",
         "illuminate/redis": "^9.22",
         "laravel/lumen-framework": "^9.0",
-        "predis/predis": "^2.0"
-    },
+        "predis/predis": "^2.0",
+		"ext-ssh2": "*"
+	},
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
         "league/flysystem": "^1.1",

@@ -1,24 +1,26 @@
 <?php
 
-namespace App\Services\DataService;
+namespace App\Services\Downloading;
 
-use App\Services\Connections\Scp;
+use App\Services\Protocols\Scp;
 use App\Services\Driver;
-use App\Services\Hosts\Host;
+use App\Services\Connections\Options\Host;
+use App\Services\Protocols\ScpSsh2;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Log;
 
 class Asterisk extends DataService
 {
-    const path = "/var/spool/asterisk/monitor/";
+    protected static string $path;
 
     protected string $lastUpdateConnection = "database_connection_id";
+
 
     public function __construct(
         protected Host $server,
         protected Host $db
     )
     {
+        self::$path = env('ASTERISK_DIR');
         parent::__construct();
     }
 
@@ -56,7 +58,7 @@ class Asterisk extends DataService
         $count = 100;
         while (true) {
             $items = $this->getItems($page, $count);
-            $page++;
+            $page += 1;
             if (empty($items)) {
                 break;
             }
@@ -68,28 +70,37 @@ class Asterisk extends DataService
 
     public function download()
     {
-        $scp = new Scp($this->server, 'audio');
+        $scp = new ScpSsh2($this->server, 'temp');
         $items = $this->crawlingPages();
         if(!empty($items->current())) {
-            $this->getInstanceLastUpdate()->updateOrCreate($this->db->getId(), $items->current()->calldate);
+            $date = $items->current()->calldate;
             foreach ($items as $item) {
-                if($item->recordingfile != "") {
-                    Log::info(json_encode($item, JSON_PRETTY_PRINT));
-                    $tempName = preg_replace("/\.[a-z0-9]*$/", "", $item->recordingfile);
-                    $wav = "$tempName.wav";
-                    $mp3 = "$tempName.mp3";
-                    unset($tempName);
-                    if(!file_exists("/var/www/storage/audio/".$wav) && !file_exists("/var/www/storage/audio/".$mp3)) {
-                        $path = self::path.date("Y/m/d", strtotime($item->calldate)). "/".$item->recordingfile;
-                        $scp->setPathDownload($path);
-                        Artisan::call('file', [
-                            'connections' => serialize($scp),
-                            'item' => $item,
-                            'type' => "Asterisk"
-                        ]);
-                    }
+                if($item->recordingfile != "" && $this->checkFileExists($item->recordingfile)) {
+                    $scp->setPathDownload(self::$path.date("Y/m/d", strtotime($item->calldate)). "/".$item->recordingfile);
+                    Artisan::call('file', [
+                        'connections' => serialize($scp),
+                        'item' => $item,
+                        'type' => "Asterisk"
+                    ]);
                 }
             }
+            $this->getInstanceLastUpdate()->updateOrCreate($this->db->getId(), $date);
         }
+    }
+
+    /**
+     * @param string $name
+     * @return bool
+     */
+    private function checkFileExists(string $name): bool
+    {
+        $tempName = preg_replace("/\.[a-z0-9]$/", "", $name);
+        $wav = "$tempName.wav";
+        $mp3 = "$tempName.mp3";
+        if(!file_exists("/var/www/storage/audio/".$wav) || !file_exists("/var/www/storage/audio/".$mp3))
+        {
+            return true;
+        }
+        return false;
     }
 }

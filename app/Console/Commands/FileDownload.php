@@ -2,7 +2,6 @@
 
 namespace App\Console\Commands;
 
-use App\Jobs\Asterisk;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -32,7 +31,7 @@ class FileDownload extends Command
         try {
             app('queue');
             $redisConf = config("queue.connections.redis");
-            $redisConf['retry_after'] = (60 * 10);
+            $redisConf['retry_after'] = 9999;
             $redisConf['queue'] = $this->argument('type');
             config(["queue.connections.redis" => $redisConf]);
             $JobClass = "App\Jobs\\".$this->argument('type');

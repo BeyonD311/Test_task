@@ -1,0 +1,182 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Infowatch",
+        "contact": {
+            "email": "support@example.com"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000",
+            "description": "для локального использования"
+        }
+    ],
+    "paths": {
+        "/api/connetions": {
+            "get": {
+                "tags": ["connections"],
+                "description": "Получение соединений",
+                "responses": {
+                    "200": {
+                        "description": "Все типы соединения",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "Asterisk"
+                                                    },
+                                                    "power": {
+                                                        "type": "boolean",
+                                                        "example": true
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/files": {
+            "post": {
+                "tags": ["files"],
+                "description": "Получение статистики о файлах",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/files"
+                },
+                "responses": {
+                    "200": {
+                        "description": "Показать файлы",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "Название сервера",
+                                                        "example": "Asterisk"
+                                                    },
+                                                    "data": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "server_from": {
+                                                                "type": "integer",
+                                                                "example": 10,
+                                                                "description": "количество файлов на сервере"
+                                                            },
+                                                            "download": {
+                                                                "type": "string",
+                                                                "example": 10,
+                                                                "description": "Количество загруженных файлов с сервера"
+                                                            },
+                                                            "files": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "name": {
+                                                                            "type": "string",
+                                                                            "example": "out-74993502829-200-20220819-064047-1660891247.190-1.wav",
+                                                                            "description": "Имя файла"
+                                                                        },
+                                                                        "connection_id":{
+                                                                            "type": "integer",
+                                                                            "example": 1,
+                                                                            "description": "Id подключения"
+                                                                        },
+                                                                        "exception": {
+                                                                            "type": "string",
+                                                                            "description": "Информация о ошибке"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "requestBodies": {
+            "files": {
+                "content": {
+                    "multipart/form-data": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "date_from": {
+                                    "type": "string",
+                                    "example": "2022-05-10 22:22:00",
+                                    "description": "Начало выборки"
+                                },
+                                "date_to": {
+                                    "type": "string",
+                                    "example": "2022-07-09 13:25:00",
+                                    "description": "Конец выборки"
+                                },
+                                "connection": {
+                                    "type": "integer",
+                                    "example": 1,
+                                    "description": "Id соединения"
+                                },
+                                "sort_field": {
+                                    "type": "string",
+                                    "example": "name"
+                                },
+                                "sort_direction": {
+                                    "type": "string",
+                                    "description": "ASC"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "security": [
+        {
+            "bearerAuth": []
+        }
+    ]
+}

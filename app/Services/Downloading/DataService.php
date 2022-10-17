@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Services\DataService;
+namespace App\Services\Downloading;
 
 use App\Exceptions\Connection;
 use App\Interfaces\DataServices;
 use App\Interfaces\LastUpdate;
 use Illuminate\Queue\SerializesModels;
 
-class DataService implements DataServices
+abstract class DataService implements DataServices
 {
     use SerializesModels;
 
@@ -49,8 +49,5 @@ class DataService implements DataServices
         return $this->instanceLastUpdate;
     }
 
-    public function download()
-    {
-        // TODO: Implement download() method.
-    }
+    abstract public function download();
 }

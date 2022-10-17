@@ -2,7 +2,10 @@
 
 namespace App\Jobs;
 
-use App\Services\Connections\Scp;
+use App\Models\CallInfo;
+use App\Models\Files;
+use App\Services\Protocols\Scp;
+use App\Services\File;
 use \Illuminate\Support\Facades\Log;
 
 /**
@@ -13,6 +16,9 @@ class Asterisk extends Job
 {
     protected Scp $scp;
     protected $item;
+    protected string $outputName;
+
+    public $timeout = 9999;
 
     public function __construct($item, $scp)
     {
@@ -22,21 +28,48 @@ class Asterisk extends Job
 
     public function handle()
     {
+        $filesOptions = [
+            "connections_id" => $this->scp->getServer()->getConnectionId(),
+            "call_at" => $this->item->calldate
+        ];
         try {
-            $this->scp->download();
+            $file = $this->scp->download();
+            $fileName = explode("/", $file);
+            $this->outputName = array_pop($fileName);
+            array_pop($fileName);
+            $fileName[] = "audio";
+            $fileName[] = $this->outputName;
+            copy($file, implode("/", $fileName));
+            unlink($file);
+            $filesOptions["name"] = $this->outputName;
             $this->saveFileInfo($this->item);
+            $filesOptions["exception"] = "empty";
         } catch (\Throwable $exception) {
             Log::error($exception->getMessage());
+            $filesOptions["exception"] = $exception;
             $this->fail($exception);
         } finally {
-            unset($this->scp);
+            $file = Files::where("name", "=", $this->outputName)->first();
+            if(is_null($file)) {
+                $file = Files::create($filesOptions);
+            } else {
+                $file->exception = $filesOptions["exception"];
+                $file->save();
+            }
+            CallInfo::create([
+                "file_id" => $file->id,
+                "src" => $this->item->src,
+                "dst" => $this->item->dst,
+                "duration" => $this->item->duration
+            ]);
+            unset($this->scp, $file);
             gc_collect_cycles();
         }
     }
 
     private function saveFileInfo($item)
     {
-        $name = preg_replace("/\.[0-9a-z]+$/", "", $item->recordingfile);
+        $name = preg_replace("/\.[0-9a-z]+$/", "", $this->outputName);
         $result = [
             "service" => 'asterisk',
             "calldate" => $item->calldate,
@@ -48,4 +81,5 @@ class Asterisk extends Job
         ];
         file_put_contents("/var/www/storage/callInfo/$name.json", print_r(json_encode($result, JSON_PRETTY_PRINT), true));
     }
+
 }
