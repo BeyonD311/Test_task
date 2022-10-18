@@ -18,8 +18,6 @@ class Asterisk extends Job
     protected $item;
     protected string $outputName;
 
-    public $timeout = 9999;
-
     public function __construct($item, $scp)
     {
         $this->scp = unserialize($scp);

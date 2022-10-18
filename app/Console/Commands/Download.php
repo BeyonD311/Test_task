@@ -33,7 +33,7 @@ class Download extends Command
         app('queue');
         $queueDb = config("queue.connections.database");
         $queueDb['queue'] = 'download';
-        $queueDb['retry_after'] = '9999';
+        $queueDb['retry_after'] = '10100';
         config(["queue.connections.database" => $queueDb]);
         foreach ($connections as $connect)
         {

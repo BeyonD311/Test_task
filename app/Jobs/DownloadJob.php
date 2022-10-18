@@ -12,8 +12,6 @@ class DownloadJob extends Job
     protected Host $database;
     protected Host $server;
 
-    public $timeout = 0;
-
     /**
      * Create a new job instance.
      *
