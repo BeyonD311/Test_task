@@ -3,6 +3,7 @@
 namespace App\Jobs;
 use App\Interfaces\Host;
 use App\Models\Connections;
+use App\Services\LastUpdate;
 use Illuminate\Support\Facades\Log;
 
 class DownloadJob extends Job
@@ -35,12 +36,19 @@ class DownloadJob extends Job
             $nameDownloading = ucfirst(strtolower($this->name));
             $instance = "App\Services\Downloading\\$nameDownloading";
             $connect = Connections::infoFromConnection($this->id);
+            /**@var \App\Services\Downloading\DataService $instance*/
             $instance = match (strtolower($this->name)) {
                 'asterisk' => new $instance($connect['server_connection'], $connect['database_connection']),
                 'cisco' => new $instance($connect['server_connection']),
                 'uc' => new $instance($connect['server_connection'], $connect['database_connection'])
             };
-             $instance->download();
+            $connect = $connect['database_connection'] === null ? $connect['server_connection'] : $connect['database_connection'];
+            $lastUpdate = new LastUpdate($instance->getConnectionType());
+            $timeZone = new \DateTimeZone('Europe/Moscow');
+            $dateNow = new \DateTime($lastUpdate->getStringDate($connect->getId()), $timeZone);
+            $instance->setDate($dateNow);
+            $data = $instance->download();
+            $lastUpdate->updateOrCreate($connect->getId(), $data->format("Y-m-d H:i:s"));
         } catch (\Throwable $exception) {
             Log::error(sprintf("Message: %s; \n Line: %d; \n File: %s",
                 $exception->getMessage(),

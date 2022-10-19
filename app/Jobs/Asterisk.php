@@ -70,6 +70,7 @@ class Asterisk extends Job
         $name = preg_replace("/\.[0-9a-z]+$/", "", $this->outputName);
         $result = [
             "service" => 'asterisk',
+            'connection_id' => $this->scp->getServer()->getConnectionId(),
             "calldate" => $item->calldate,
             "src" => $item->src,
             "dst" => $item->dst,

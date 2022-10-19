@@ -26,18 +26,17 @@ class Cisco extends DataService
         parent::__construct();
     }
 
-    public function download()
+    public function download(): \DateTimeInterface
     {
         app("db");
         $duration = 0;
-        $maxDate = (int)$this->getInstanceLastUpdate()->getTimestamp($this->server->getId());
-        $timeZone = new \DateTimeZone('Europe/Moscow');
-        $date = new \DateTime('now', $timeZone);
-        $flagEmpty = false;
+        $maxDate = $this->getDate()->getTimestamp();
+        $date = new \DateTime('now', $this->timeZone);
         $items = (new \App\Services\Query\Cisco($this->connection))
-            ->setPaginate(0, 1000)
+            ->setPaginate(0, 100)
             ->getItems(date("Y-m-d H:i:s.u", $maxDate), $date->format("Y-m-d H:i:s.u"));
         $maxDate = (int)($maxDate."000");
+
         foreach ($items as $item) {
             if(empty($item['urls']['wavUrl'])) {
                 continue;
@@ -53,12 +52,12 @@ class Cisco extends DataService
                 continue;
             }
             $item['connection_id'] = $this->server->getConnectionId();
-            $this->fileDownload($item);
+//            $this->fileDownload($item);
         }
-        if($flagEmpty === false) {
-            $maxDate /= 1000;
-            $this->getInstanceLastUpdate()->updateOrCreate($this->server->getId(), date('Y-m-d H:i:s', $maxDate));
-        }
+
+        $maxDate /= 1000;
+
+        return new \DateTime(date('Y-m-d H:i:s', $maxDate), $this->timeZone);
     }
 
     private function fileDownload(array $item)

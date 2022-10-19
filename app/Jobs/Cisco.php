@@ -61,6 +61,7 @@ class Cisco extends Job
     {
         $result = [
             'service' => 'cisco',
+            'connection_id' => $this->item['connection_id'],
             'calldate' => date('Y-m-d H:i:s', ($this->item["sessionStartDate"] / 1000)),
             'duration' => round($this->item['duration'] / 1000),
             'uniqueid' => $this->item['sessionId'],

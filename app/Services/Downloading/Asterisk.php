@@ -2,7 +2,6 @@
 
 namespace App\Services\Downloading;
 
-use App\Services\Protocols\Scp;
 use App\Services\Driver;
 use App\Services\Connections\Options\Host;
 use App\Services\Protocols\ScpSsh2;
@@ -14,7 +13,6 @@ class Asterisk extends DataService
 
     protected string $lastUpdateConnection = "database_connection_id";
 
-
     public function __construct(
         protected Host $server,
         protected Host $db
@@ -22,6 +20,7 @@ class Asterisk extends DataService
     {
         self::$path = env('ASTERISK_DIR');
         parent::__construct();
+        $this->timeZone = new \DateTimeZone("Europe/Moscow");
     }
 
     public function getItems($page, $count): array
@@ -29,14 +28,9 @@ class Asterisk extends DataService
         $db = app('db');
         $driver = new Driver($this->db);
         $driver->setDriver('asterisk', 'mysql','asteriskcdrdb');
-        $date = date('Y-m-d H:i:s', $this->getInstanceLastUpdate()->getTimestamp($this->db->getId()));
-        /**
-         * @var \Illuminate\Database\Query\Builder $items
-         */
-        $timeZone = new \DateTimeZone("Europe/Moscow");
-        $dateNow = new \DateTime('now', $timeZone);
+        $dateNow = new \DateTime('now', $this->timeZone);
         $where = [
-            ['cdr.calldate', '>=', date("Y-m-d 00:00:00", strtotime($date))],
+            ['cdr.calldate', '>=', $this->getDate()->format('Y-m-d 00:00:00')],
             ['cdr.calldate', '<=', $dateNow->format('Y-m-d H:i:s')],
             ['cdr.disposition', '=', "ANSWERED"],
             ['cdr.recordingfile', '!=', null]
@@ -68,24 +62,29 @@ class Asterisk extends DataService
         }
     }
 
-    public function download()
+    /**
+     * @return \DateTimeInterface
+     * @throws \Exception
+     */
+    public function download(): \DateTimeInterface
     {
         $scp = new ScpSsh2($this->server, 'temp');
         $items = $this->crawlingPages();
-        if(!empty($items->current())) {
-            $date = $items->current()->calldate;
-            foreach ($items as $item) {
-                if($item->recordingfile != "" && $this->checkFileExists($item->recordingfile)) {
-                    $scp->setPathDownload(self::$path.date("Y/m/d", strtotime($item->calldate)). "/".$item->recordingfile);
-                    Artisan::call('file', [
-                        'connections' => serialize($scp),
-                        'item' => $item,
-                        'type' => "Asterisk"
-                    ]);
-                }
-            }
-            $this->getInstanceLastUpdate()->updateOrCreate($this->db->getId(), $date);
+        if(empty($items->current())) {
+            return $this->getDate();
         }
+        $date = $items->current()->calldate;
+        foreach ($items as $item) {
+            if($item->recordingfile != "" && $this->checkFileExists($item->recordingfile)) {
+                $scp->setPathDownload(self::$path.date("Y/m/d", strtotime($item->calldate)). "/".$item->recordingfile);
+                Artisan::call('file', [
+                    'connections' => serialize($scp),
+                    'item' => $item,
+                    'type' => "Asterisk"
+                ]);
+            }
+        }
+        return new \DateTime($date, $this->timeZone);
     }
 
     /**

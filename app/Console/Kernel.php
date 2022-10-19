@@ -15,7 +15,8 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         "App\Console\Commands\Download",
         "App\Console\Commands\FileDownload",
-        "App\Console\Commands\FillFiles"
+        "App\Console\Commands\FillFiles",
+        "App\Console\Commands\UpdateCallInfo"
     ];
 
     /**

@@ -19,35 +19,29 @@ abstract class DataService implements DataServices
      */
     protected string $lastUpdateConnection;
 
-    protected LastUpdate $instanceLastUpdate;
+    protected \DateTimeInterface $finalDate;
 
-    /**
-     * @throws Connection
-     */
+    protected \DateTimeZone $timeZone;
+
     public function __construct()
     {
-        $this->setInstanceLastUpdate();
+        $this->timeZone = new \DateTimeZone('Europe/Moscow');
     }
 
-    /**
-     * Создает экземпляр LastUpdate
-     * @throws Connection
-     */
-    protected function setInstanceLastUpdate()
+    public function setDate(\DateTimeInterface $date)
     {
-        if(is_null($this->lastUpdateConnection)) {
-            throw new Connection("Не установлена колонка соединения database_connection_id || server_connection_id", 400);
-        }
-        $this->instanceLastUpdate = new \App\Services\LastUpdate($this->lastUpdateConnection);
+        $this->finalDate = $date;
     }
 
-    /**
-     * @return LastUpdate
-     */
-    protected function getInstanceLastUpdate(): LastUpdate
+    public function getDate(): \DateTimeInterface
     {
-        return $this->instanceLastUpdate;
+        return $this->finalDate;
     }
 
-    abstract public function download();
+    public function getConnectionType(): string
+    {
+        return $this->lastUpdateConnection;
+    }
+
+    abstract public function download(): \DateTimeInterface;
 }

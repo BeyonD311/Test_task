@@ -17,7 +17,6 @@ class Cisco implements \App\Interfaces\ConnectionInterface
     public function __construct(protected Server $server)
     {
         $this->httpClient = new Http('https://'.$server->getHost().':'.$server->getPort().'/ora/');
-
     }
 
     /**
