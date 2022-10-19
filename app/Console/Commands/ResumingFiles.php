@@ -4,16 +4,15 @@ namespace App\Console\Commands;
 
 use App\Jobs\DownloadJob;
 use App\Models\Connections;
-use Illuminate\Console\Command;
 
-class Download extends Command
+class ResumingFiles extends \Illuminate\Console\Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'download';
+    protected $signature = 'resumingFiles';
 
     /**
      * The console command description.
@@ -40,7 +39,9 @@ class Download extends Command
             try {
                 // Создание instance по полю name из таблицы connections в db connection
                 // Поле соответвует названию класса в app/Services/Downloading
-                dispatch(new DownloadJob($connect['name'], $connect['id']))->onConnection('database')->onQueue('download');
+                $timeZone = new \DateTimeZone('Europe/Moscow');
+                $data = new \DateTime(date("Y-m-d H:i:s", strtotime(date("Y-m-d 00:00:00")) - 86400),$timeZone);
+                dispatch(new DownloadJob($connect['name'], $connect['id'], $data->format("Y-m-d H:i:s")))->onConnection('database')->onQueue('download');
             } catch (\Throwable $exception) {
                 dump($exception->getMessage(),'File: '.$exception->getFile(),'Line: ', $exception->getLine());
             }
@@ -48,6 +49,4 @@ class Download extends Command
 
         return 0;
     }
-
-
 }

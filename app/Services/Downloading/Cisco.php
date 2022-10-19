@@ -52,7 +52,7 @@ class Cisco extends DataService
                 continue;
             }
             $item['connection_id'] = $this->server->getConnectionId();
-//            $this->fileDownload($item);
+            $this->fileDownload($item);
         }
 
         $maxDate /= 1000;
