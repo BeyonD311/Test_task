@@ -116,6 +116,22 @@ $app->withFacades();
 
 $app->configure('filesystems');
 
+config(['filesystems.disks.audio' => [
+    'driver' => 'local',
+    'root' => storage_path('audio'),
+    'url' => env('APP_URL').'/audio',
+    'visibility' => 'public',
+]]);
+
+if(!function_exists("convertDateToMillisecond")) {
+    function convertDateToMillisecond(string $date): int {
+        $time = new \DateTime($date);
+        $matches = [];
+        preg_match("/\d{6,6}$/", $time->format("Y-m-d H:i:s:u"), $matches);
+        return (int)($time->getTimestamp().substr($matches[0], 0, 3));
+    }
+}
+
 if (!class_exists('Storage')) class_alias('Illuminate\Support\Facades\Storage', 'Storage');
 
 $app->register(Illuminate\Filesystem\FilesystemServiceProvider::class);

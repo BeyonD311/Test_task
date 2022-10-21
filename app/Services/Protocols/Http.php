@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Services\Connections;
+namespace App\Services\Protocols;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 
-class Rest
+class Http
 {
     protected $response;
 

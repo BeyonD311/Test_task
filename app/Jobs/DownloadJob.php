@@ -2,31 +2,30 @@
 
 namespace App\Jobs;
 use App\Interfaces\Host;
-use App\Services\Hosts\DB;
-use App\Services\Hosts\Server;
+use App\Models\Connections;
+use App\Services\LastUpdate;
+use Illuminate\Support\Facades\Log;
 
 class DownloadJob extends Job
 {
     protected string $name;
+    protected int $id;
+    protected string $data;
     protected Host $database;
     protected Host $server;
-
-    public $timeout = 0;
+    protected $lastUpdate;
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct($name, $server = [], $database = [])
+    public function __construct($name, $id, $data = "")
     {
         $this->name = $name;
-        if(!empty($server)) {
-            $this->server = $this->createServer($server);
-        }
-        if(!empty($database)) {
-            $this->database = $this->databaseServerCreate($database);
-        }
+        $this->id = $id;
+        $this->data = $data;
+        $this->lastUpdate = null;
     }
 
     /**
@@ -36,39 +35,52 @@ class DownloadJob extends Job
      */
     public function handle()
     {
-        $nameDataService = ucfirst(strtolower($this->name));
-        $instance = "App\Services\DataService\\$nameDataService";
-        try{
-             $instance = match (strtolower($this->name)) {
-                'asterisk' => new $instance($this->server, $this->database),
-                'cisco' => new $instance($this->server),
-                'uc' => new $instance($this->server, $this->database)
-             };
-             $instance->download();
+        try {
+            app('db');
+            $nameDownloading = ucfirst(strtolower($this->name));
+            $instance = "App\Services\Downloading\\$nameDownloading";
+            $connect = Connections::infoFromConnection($this->id);
+            /**@var \App\Services\Downloading\DataService $instance*/
+            $instance = match (strtolower($this->name)) {
+                'asterisk' => new $instance($connect['server_connection'], $connect['database_connection']),
+                'cisco' => new $instance($connect['server_connection']),
+                'uc' => new $instance($connect['server_connection'], $connect['database_connection'])
+            };
+            $dateNow = $this->createDate($connect, $instance);
+            $instance->setDate($dateNow);
+            $dataLastUpdate = $instance->download();
+            /*if($this->data !== "") {
+                $this->instanceLustUpdate($instance)->updateOrCreate($connect->getId(), $dataLastUpdate->format("Y-m-d H:i:s"));
+            }*/
         } catch (\Throwable $exception) {
+            Log::error(sprintf("Message: %s; \n Line: %d; \n File: %s",
+                $exception->getMessage(),
+                $exception->getFile(),
+                $exception->getFile()
+            ));
             $this->fail($exception);
         }
     }
 
-
-    private function createServer(array $server): Host
+    private function createDate($connect, $instance): \DateTimeInterface
     {
-        $serverDto = new Server();
-        return $serverDto->setHost($server['host'])
-            ->setId($server['id'])
-            ->setPort($server['port'])
-            ->setLogin($server['login'])
-            ->setPass($server['pass']);
+        $connect = $connect['database_connection'] === null ? $connect['server_connection'] : $connect['database_connection'];
+        $timeZone = new \DateTimeZone('Europe/Moscow');
+        if($this->data !== "") {
+            return new \DateTime($this->data, $timeZone);
+        }
+        return new \DateTime($this->instanceLustUpdate($instance)->getStringDate($connect->getId()), $timeZone);
     }
 
-    private function databaseServerCreate(array $database): Host
+    /**
+     * @param $instance
+     * @return LastUpdate
+     */
+    private function instanceLustUpdate($instance): LastUpdate
     {
-        $databaseDto = new DB();
-        return $databaseDto->setHost($database['host'])
-            ->setPort($database['port'])
-            ->setLogin($database['login'])
-            ->setPass($database['pass'])
-            ->setId($database['id'])
-            ->setTable($database['table']);
+        if(is_null($this->lastUpdate)) {
+            $this->lastUpdate = new LastUpdate($instance->getConnectionType());
+        }
+        return $this->lastUpdate;
     }
 }

@@ -15,7 +15,9 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         "App\Console\Commands\Download",
         "App\Console\Commands\FileDownload",
-        "App\Console\Commands\Test"
+        "App\Console\Commands\FillFiles",
+        "App\Console\Commands\UpdateCallInfo",
+        "App\Console\Commands\ResumingFiles"
     ];
 
     /**
@@ -27,5 +29,6 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->command('download')->everyThirtyMinutes();
+        $schedule->command('resumingFiles')->dailyAt("00:00:00");
     }
 }
