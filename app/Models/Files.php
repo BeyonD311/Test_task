@@ -42,7 +42,7 @@ class Files extends Model
             static::generateSrdDstDuration($array['src'], $array['dst'], $array['duration']));
 
         $instance = static::with(['callInfo'])
-            ->select(["src", "dst", "duration", "name", "id", "call_at"])
+            ->select(["src", "dst", "duration", "name", "id", "call_at", "connections_id"])
             ->join('call_info', 'files.id', '=', 'call_info.file_id');
         if(!empty($array['connection'])) {
             $instance = $instance->whereIn('connections_id', $array['connection']);
