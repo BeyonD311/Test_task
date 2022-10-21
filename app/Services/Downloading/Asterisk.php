@@ -6,6 +6,7 @@ use App\Services\Driver;
 use App\Services\Connections\Options\Host;
 use App\Services\Protocols\ScpSsh2;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
 
 class Asterisk extends DataService
 {
@@ -93,9 +94,9 @@ class Asterisk extends DataService
      */
     private function checkFileExists(string $name): bool
     {
-        $tempName = preg_replace("/\.[a-z0-9]$/", "", $name);
-        $wav = "$tempName.wav";
-        $mp3 = "$tempName.mp3";
+        $tempName = preg_replace("/\.[a-z0-9]*$/", "", $name);
+        $wav = "$tempName-{$this->db->getId()}.wav";
+        $mp3 = "$tempName-{$this->db->getId()}.mp3";
         if(!file_exists("/var/www/storage/audio/".$wav) || !file_exists("/var/www/storage/audio/".$mp3))
         {
             return true;
