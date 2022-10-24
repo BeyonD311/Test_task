@@ -53,7 +53,7 @@ class ScpSsh2 extends Scp
     /**
      * @return string
      */
-    protected function generateOutputName(): string
+    public function generateOutputName(): string
     {
         $sliceName = explode("/", $this->pathDownload);
         $name = array_pop($sliceName);

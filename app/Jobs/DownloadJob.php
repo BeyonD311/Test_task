@@ -46,12 +46,13 @@ class DownloadJob extends Job
                 'cisco' => new $instance($connect['server_connection']),
                 'uc' => new $instance($connect['server_connection'], $connect['database_connection'])
             };
+            $connect = $connect['database_connection'] === null ? $connect['server_connection'] : $connect['database_connection'];
             $dateNow = $this->createDate($connect, $instance);
             $instance->setDate($dateNow);
             $dataLastUpdate = $instance->download();
-            /*if($this->data !== "") {
+            if($this->data !== "") {
                 $this->instanceLustUpdate($instance)->updateOrCreate($connect->getId(), $dataLastUpdate->format("Y-m-d H:i:s"));
-            }*/
+            }
         } catch (\Throwable $exception) {
             Log::error(sprintf("Message: %s; \n Line: %d; \n File: %s",
                 $exception->getMessage(),
@@ -64,7 +65,6 @@ class DownloadJob extends Job
 
     private function createDate($connect, $instance): \DateTimeInterface
     {
-        $connect = $connect['database_connection'] === null ? $connect['server_connection'] : $connect['database_connection'];
         $timeZone = new \DateTimeZone('Europe/Moscow');
         if($this->data !== "") {
             return new \DateTime($this->data, $timeZone);

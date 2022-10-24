@@ -22,44 +22,42 @@ class Asterisk extends Job
     {
         $this->scp = unserialize($scp);
         $this->item = $item;
+        $this->outputName = $this->scp->generateOutputName();
     }
 
     public function handle()
     {
         $filesOptions = [
             "connections_id" => $this->scp->getServer()->getConnectionId(),
-            "call_at" => $this->item->calldate
+            "call_at" => $this->item->calldate,
+            "name" => $this->outputName
         ];
         try {
             $file = $this->scp->download();
-            $fileName = explode("/", $file);
-            $this->outputName = array_pop($fileName);
-            array_pop($fileName);
-            $fileName[] = "audio";
-            $fileName[] = $this->outputName;
-            copy($file, implode("/", $fileName));
+            copy($file, "/var/www/storage/audio/".$filesOptions['name']);
             unlink($file);
-            $filesOptions["name"] = $this->outputName;
-            $this->saveFileInfo($this->item);
             $filesOptions["exception"] = "empty";
         } catch (\Throwable $exception) {
             Log::error($exception->getMessage());
             $filesOptions["exception"] = $exception;
-            $this->fail($exception);
+            $this->fail($filesOptions["exception"]);
         } finally {
-            $file = Files::where("name", "=", $this->outputName)->first();
+            $file = Files::where("name", "=", $filesOptions['name'])->first();
             if(is_null($file)) {
                 $file = Files::create($filesOptions);
             } else {
                 $file->exception = $filesOptions["exception"];
                 $file->save();
             }
-            CallInfo::create([
-                "file_id" => $file->id,
-                "src" => $this->item->src,
-                "dst" => $this->item->dst,
-                "duration" => $this->item->duration
-            ]);
+            if($filesOptions["exception"] == "empty") {
+                $this->saveFileInfo($this->item);
+                CallInfo::create([
+                    "file_id" => $file->id,
+                    "src" => $this->item->src,
+                    "dst" => $this->item->dst,
+                    "duration" => $this->item->duration
+                ]);
+            }
             unset($this->scp, $file);
             gc_collect_cycles();
         }
