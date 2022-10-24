@@ -19,7 +19,7 @@ class Asterisk extends Query
             ['cdr.calldate', '>=', $from],
             ['cdr.calldate', '<=', $to],
             ['cdr.disposition', '=', "ANSWERED"],
-            ['cdr.recordingfile', '!=', null]
+            ['cdr.recordingfile', '!=', ""]
         ];
         if($this->crawling) {
             return $this->crawlingPages($where);
@@ -77,7 +77,7 @@ class Asterisk extends Query
             ['cdr.calldate', '>=', $from],
             ['cdr.calldate', '<=', $to],
             ['cdr.disposition', '=', "ANSWERED"],
-            ['cdr.recordingfile', '!=', null]
+            ['cdr.recordingfile', '!=', ""]
         ];
 
         $query = $this->makeQuery($where);

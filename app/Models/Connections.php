@@ -45,6 +45,7 @@ class Connections extends \Illuminate\Database\Eloquent\Model
             ->map(function ($item) use ($options) {
                 $items = $item->files()
                     ->where([
+                        ["exception", "=", "empty"],
                         ["call_at", ">=", $options['date_from']],
                         ["call_at", "<=", $options['date_to']]
                     ])->paginate($options['size'], page: $options['page']);
