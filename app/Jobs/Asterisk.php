@@ -43,6 +43,7 @@ class Asterisk extends Job
             $this->fail($filesOptions["exception"]);
         } finally {
             $file = Files::where("name", "=", $filesOptions['name'])->first();
+            Log::info((string)$file);
             if(is_null($file)) {
                 $file = Files::create($filesOptions);
             } else {

@@ -37,7 +37,7 @@ class FileDownload extends Command
             $JobClass = "App\Jobs\\".$this->argument('type');
             dispatch(new $JobClass($this->argument('item'), $this->argument('connections')))->onConnection('redis')->onQueue($this->argument('type'));
         } catch (\Throwable $exception) {
-            Log::info(json_encode($exception, JSON_PRETTY_PRINT));
+            Log::error(sprintf("Message: %s; File: %s; Line: %s", $exception->getMessage(), $exception->getFile(), $exception->getLine()));
         }
         return 0;
     }

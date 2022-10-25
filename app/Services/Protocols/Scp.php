@@ -59,7 +59,7 @@ class Scp
         $code = 0;
         exec($exec, $output, $code);
         if ($code != 0) {
-            $logMessage = sprintf("Code: %d; Message: %s; \n Exec: %v",
+            $logMessage = sprintf("Code: %d; Message: %s; \n Exec: %s",
             $code, json_encode($output, JSON_PRETTY_PRINT), $exec);
             Log::error($logMessage);
             if ($code == 1) {
@@ -67,9 +67,10 @@ class Scp
             }
             throw new Connection(json_encode($output, JSON_PRETTY_PRINT), 404);
         }
-        $names = $this->buildOutputName();
-        File::rename($names['orig'], $names['name']);
-        return $names['name'];
+        $oldName = $this->generateOrigName();
+        $newName = $this->download.$this->to.'/'.$this->generateOutputName();
+        File::rename($oldName, $newName);
+        return $newName;
     }
 
     protected function checkOutPath()
@@ -80,17 +81,21 @@ class Scp
         $this->to = "temp";
     }
 
-    protected function buildOutputName(): array
+    public function generateOutputName(): string
     {
         $name = explode("/", $this->pathDownload);
         $origName = array_pop($name);
         $name = explode(".", $origName);
         $expansion = array_pop($name);
-        $name[] = array_pop($name)."-".$this->server->getConnectionId().$expansion;
+        $name[] = array_pop($name)."-".$this->server->getConnectionId().".".$expansion;
         unset($expansion, $connectionId);
-        return  [
-            "orig" => $this->download.$this->to.'/'.$origName,
-            "name" => $this->download.$this->to.'/'.implode('.', $name)
-        ];
+        return implode('.', $name);
+    }
+
+    private function generateOrigName(): string
+    {
+        $name = explode("/", $this->pathDownload);
+        $origName = array_pop($name);
+        return $this->download.$this->to.'/'.$origName;
     }
 }
