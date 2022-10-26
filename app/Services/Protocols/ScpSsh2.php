@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Services\Protocols;
 
 use App\Exceptions\Connection;
+use Illuminate\Support\Facades\Log;
 
 class ScpSsh2 extends Scp
 {
@@ -13,8 +14,11 @@ class ScpSsh2 extends Scp
     public function connect(): void
     {
         $this->connect = ssh2_connect($this->server->getHost(), $this->server->getPort(), null, callbacks: [
+            "debug" => function($reason, $message, $always_display) {
+                Log::error(sprintf("reason: %s; $message: %s; language: %s", json_encode($reason, JSON_PRETTY_PRINT), $message, json_encode($always_display, JSON_PRETTY_PRINT)));
+            },
             "disconnect" => function($reason, $message, $language) {
-                dump($reason, $message, $language);
+                Log::error(sprintf("reason: %s; $message: %s; language: %s", json_encode($reason, JSON_PRETTY_PRINT), $message, $language));
             }
         ]);
         if($this->connect === false) {
