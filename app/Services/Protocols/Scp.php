@@ -68,7 +68,7 @@ class Scp
             throw new Connection(json_encode($output, JSON_PRETTY_PRINT), 404);
         }
         $oldName = $this->generateOrigName();
-        $newName = $this->download.$this->to.'/'.$this->generateOutputName();
+        $newName = $this->download.'audio/'.$this->generateOutputName();
         File::rename($oldName, $newName);
         return $newName;
     }

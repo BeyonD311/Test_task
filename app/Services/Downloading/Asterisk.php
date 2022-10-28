@@ -98,10 +98,11 @@ class Asterisk extends DataService
         $tempName = preg_replace("/\.[a-z0-9]*$/", "", $name);
         $wav = "$tempName-{$this->db->getId()}.wav";
         $mp3 = "$tempName-{$this->db->getId()}.mp3";
-        if(!file_exists("/var/www/storage/audio/".$wav) && !file_exists("/var/www/storage/audio/".$mp3))
-        {
-            return true;
+        if(file_exists("/var/www/storage/audio/".$wav)) {
+            return false;
+        } elseif (file_exists("/var/www/storage/audio/".$mp3)) {
+            return false;
         }
-        return false;
+        return true;
     }
 }

@@ -6,6 +6,7 @@ use App\Models\CallInfo;
 use App\Models\Files;
 use App\Services\Protocols\Scp;
 use App\Services\File;
+use App\Services\Protocols\ScpSsh2;
 use \Illuminate\Support\Facades\Log;
 
 /**
@@ -14,7 +15,7 @@ use \Illuminate\Support\Facades\Log;
 
 class Asterisk extends Job
 {
-    protected Scp $scp;
+    protected ScpSsh2 $scp;
     protected $item;
     protected string $outputName;
 
@@ -34,7 +35,6 @@ class Asterisk extends Job
         ];
         try {
             $file = $this->scp->download();
-            copy($file, "/var/www/storage/audio/".$filesOptions['name']);
             unlink($file);
             $filesOptions["exception"] = "empty";
         } catch (\Throwable $exception) {

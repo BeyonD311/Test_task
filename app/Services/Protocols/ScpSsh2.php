@@ -50,6 +50,7 @@ class ScpSsh2 extends Scp
         if(!ssh2_scp_recv($this->connect, $this->pathDownload, $pathDownload)) {
             throw new Connection("При загрузке файла произошла ошибка");
         }
+        copy($pathDownload, $this->download."audio/".$this->generateOutputName());
         $this->disconnect();
         return $pathDownload;
     }

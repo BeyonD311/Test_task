@@ -13,6 +13,8 @@ class Cisco extends Job
     protected $item;
     protected $options;
 
+    public $timeout = 1900;
+
     public function __construct($item, $context)
     {
         $this->context = $context;
