@@ -43,15 +43,15 @@ class ScpSsh2 extends Scp
      * @return string
      * @throws Connection
      */
-    public function download(): string
+    public function execute(): string
     {
-        $this->connect();
         $pathDownload = $this->download.$this->to."/".$this->generateOutputName();
-        if(!ssh2_scp_recv($this->connect, $this->pathDownload, $pathDownload)) {
+        $status = ssh2_scp_recv($this->connect, $this->pathDownload, $pathDownload);
+        if(!$status) {
             throw new Connection("При загрузке файла произошла ошибка");
+        } else {
+            copy($pathDownload, $this->download."audio/".$this->generateOutputName());
         }
-        copy($pathDownload, $this->download."audio/".$this->generateOutputName());
-        $this->disconnect();
         return $pathDownload;
     }
 

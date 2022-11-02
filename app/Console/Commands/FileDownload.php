@@ -31,7 +31,6 @@ class FileDownload extends Command
         try {
             app('queue');
             $redisConf = config("queue.connections.redis");
-            $redisConf['retry_after'] = '10100';
             $redisConf['queue'] = $this->argument('type');
             config(["queue.connections.redis" => $redisConf]);
             $JobClass = "App\Jobs\\".$this->argument('type');

@@ -38,12 +38,13 @@ class Asterisk extends Job
             unlink($file);
             $filesOptions["exception"] = "empty";
         } catch (\Throwable $exception) {
-            Log::error($exception->getMessage());
             $filesOptions["exception"] = $exception;
             $this->fail($filesOptions["exception"]);
         } finally {
             $file = Files::where("name", "=", $filesOptions['name'])->first();
-            Log::info((string)$file);
+            if(file_exists("/var/www/storage/audio/".$filesOptions['name'])) {
+                $filesOptions["exception"] = "empty";
+            }
             if(is_null($file)) {
                 $file = Files::create($filesOptions);
             } else {

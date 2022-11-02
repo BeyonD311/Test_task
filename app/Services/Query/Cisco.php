@@ -4,6 +4,8 @@ namespace App\Services\Query;
 
 use App\Exceptions\Connection;
 use App\Exceptions\Connection as ConnectException;
+use App\Services\DtoFactory;
+use App\Services\FileDTO;
 
 class Cisco extends Query
 {
@@ -82,7 +84,40 @@ class Cisco extends Query
                 throw new Connection("", 500);
             }
             $this->paginate['page'] += $this->paginate['size'];
-            yield $response['responseBody']['sessions'];
+            $items = [];
+            foreach ($response['responseBody']['sessions'] as $item) {
+                $param = [
+                    "file" => $item['urls']['wavUrl'],
+
+                ];
+                $duration = 0;
+                foreach ($item['tracks'] as $track) {
+                    $duration += $track['trackDuration'];
+                }
+                $param['duration'] = $duration / 1000;
+                $param['calldate'] = date("Y-m-d H:i:s", $item["sessionStartDate"] / 1000);
+                $param['uniqueid'] = md5($item['urls']['wavUrl']);
+                $param = array_merge($param, $this->generatePhone($item['tracks']));
+                $items[] = DtoFactory::createDto(FileDTO::class, $param);
+            }
+            yield $items;
         }
+    }
+
+    private function generatePhone(array $tracks): array
+    {
+        $result = [];
+        /**
+         * Индекс 0 - куда звонит
+         * Индекс 1 - кто звонит
+         */
+        if(count($tracks) > 1) {
+            $result["src"] = $tracks[1]["participants"][0]['deviceRef'];
+            $result["dst"] = $tracks[0]["participants"][0]['deviceRef'];
+        } else {
+            $result["src"] = $tracks[0]["participants"][0]['deviceRef'];
+            $result["dst"] = "empty";
+        }
+        return $result;
     }
 }

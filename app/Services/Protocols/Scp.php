@@ -8,7 +8,7 @@ use App\Services\File;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
-class Scp
+class Scp implements IProtocols
 {
     use SerializesModels;
 
@@ -51,7 +51,7 @@ class Scp
         return $this->server;
     }
 
-    public function download()
+    public function execute()
     {
         $this->checkOutPath();
         $exec = $this->makeShhPass() ." ".$this->makeScp();

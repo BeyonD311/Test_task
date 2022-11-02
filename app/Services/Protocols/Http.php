@@ -3,14 +3,16 @@
 namespace App\Services\Protocols;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
+use Illuminate\Queue\SerializesModels;
 
-class Http
+class Http implements IProtocols
 {
+    use SerializesModels;
     protected $response;
 
     protected Client $client;
 
-    public function __construct($uri)
+    public function __construct($uri = "")
     {
         $this->client = new Client([
             'base_uri' => $uri,
@@ -19,7 +21,7 @@ class Http
         ]);
     }
 
-    public function send(string $method, string $uri, $body): static
+    public function execute(string $method = "", string $uri = "", $body = null): static
     {
         $this->response = $this->client->request($method, $uri, $body);
         return $this;

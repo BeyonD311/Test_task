@@ -28,50 +28,36 @@ class Cisco extends DataService
 
     public function download(): \DateTimeInterface
     {
-        app("db");
-        $duration = 0;
         $maxDate = $this->getDate()->getTimestamp();
         $date = new \DateTime('now', $this->timeZone);
         $items = (new \App\Services\Query\Cisco($this->connection))
             ->setPaginate(0, 100)
             ->getItems(date("Y-m-d H:i:s.u", $maxDate), $date->format("Y-m-d H:i:s.u"));
-        $maxDate = (int)($maxDate."000");
-
         foreach ($items as $item) {
-            if(empty($item['urls']['wavUrl'])) {
+            if($maxDate < strtotime($item->calldate)) {
+                $maxDate = strtotime($item->calldate);
+            }
+            if(file_exists("/var/www/storage/audio/".md5($item->file)."-".$this->server->getConnectionId().".wav")) {
                 continue;
             }
-            foreach ($item['tracks'] as $track) {
-                $duration += $track['trackDuration'];
-            }
-            $item['duration'] = $duration;
-            if($maxDate < $item['sessionStartDate']) {
-                $maxDate = $item['sessionStartDate'];
-            }
-            if(file_exists("/var/www/storage/audio/".md5($item['urls']['wavUrl'])."-".$this->server->getConnectionId().".wav")) {
-                continue;
-            }
-            $item['connection_id'] = $this->server->getConnectionId();
+            $item->{'connection_id'} = $this->server->getConnectionId();
             $this->fileDownload($item);
         }
-
-        $maxDate /= 1000;
-
         return new \DateTime(date('Y-m-d H:i:s', $maxDate), $this->timeZone);
     }
 
-    private function fileDownload(array $item)
+    private function fileDownload($item)
     {
         $context = [
             'headers' => [
-                'Cookie' => 'JSESSIONID='.$this->cookie['JSESSIONID'],
                 'Authorization' => 'Basic '.base64_encode($this->server->getLogin().':'.$this->server->getPass()),
             ]
         ];
-        Artisan::call('file', [
+        $request = new Http();
+        /*Artisan::call('file', [
             'connections' => $context,
             'item' => $item,
             'type' => "Cisco"
-        ]);
+        ]);*/
     }
 }

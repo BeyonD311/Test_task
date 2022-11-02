@@ -13,8 +13,6 @@ class Cisco extends Job
     protected $item;
     protected $options;
 
-    public $timeout = 1900;
-
     public function __construct($item, $context)
     {
         $this->context = $context;
@@ -30,10 +28,6 @@ class Cisco extends Job
             "connections_id" => $this->item['connection_id']
         ];
         try {
-            $client = new Client([
-                'verify' => false,
-                'cookies' => true
-            ]);
             $file = $client->request('GET', $this->item['urls']['wavUrl'], $this->context);
             file_put_contents('/var/www/storage/temp/'.$name, print_r($file->getBody()->getContents(), true));
             $files["exception"] = "empty";

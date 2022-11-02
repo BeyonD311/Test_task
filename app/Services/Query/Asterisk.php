@@ -2,6 +2,8 @@
 
 namespace App\Services\Query;
 
+use App\Services\DtoFactory;
+use App\Services\FileDTO;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class Asterisk extends Query
@@ -57,7 +59,15 @@ class Asterisk extends Query
                 break;
             }
             foreach ($items->items() as $item) {
-                yield $item->recordingfile => $item;
+                $prop = [
+                    'file' => $item->recordingfile,
+                    'src' => $item->src,
+                    'dst' => $item->dst,
+                    'duration' => $item->duration,
+                    'uniqueid' => $item->uniqueid,
+                    'calldate' => $item->calldate
+                ];
+                yield DtoFactory::createDto(FileDTO::class, $prop);
             }
             $this->paginate['page']++;
         }
