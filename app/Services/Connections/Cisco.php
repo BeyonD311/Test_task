@@ -16,7 +16,18 @@ class Cisco implements \App\Interfaces\ConnectionInterface
 
     public function __construct(protected Server $server)
     {
-        $this->httpClient = new Http('https://'.$server->getHost().':'.$server->getPort().'/ora/');
+        $this->httpClient = new Http($server, 'https://'.$server->getHost().':'.$server->getPort().'/ora/');
+        $this->httpClient
+            ->setMethod("POST")
+            ->setUri('authenticationService/authentication/signIn')
+            ->setBody([
+                'json' => [
+                    "requestParameters" => [
+                        'username' => $this->server->getLogin(),
+                        'password' => $this->server->getPass()
+                    ]
+                ]
+            ]);
     }
 
     /**
@@ -35,21 +46,12 @@ class Cisco implements \App\Interfaces\ConnectionInterface
 
     private function sigIn(): void
     {
-        $sigIn = $this->httpClient->send('post', 'authenticationService/authentication/signIn', [
-            'json' => [
-                "requestParameters" => [
-                    'username' => $this->server->getLogin(),
-                    'password' => $this->server->getPass()
-                ]
-            ]
-        ]);
-        $response = json_decode($sigIn->response()->getBody()->getContents(), true);
+        $response = $this->httpClient->execute();
         #Cisco code success 2000
         if($response['responseCode'] !== 2000) {
             throw new Connection($response["responseMessage"], $response['responseCode']);
         }
-
-        foreach ($sigIn->response()->getHeader('Set-Cookie') as $cookie) {
+        foreach ($this->httpClient->getHeader('Set-Cookie') as $cookie) {
             if(str_contains($cookie, 'JSESSIONID')) {
                 $params = explode(';', $cookie);
                 foreach ($params as $param) {

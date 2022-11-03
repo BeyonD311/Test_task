@@ -31,16 +31,16 @@ class Download extends Command
     {
         $connections = Connections::where('power', '=', true)->get();
         app('queue');
-        $queueDb = config("queue.connections.database");
-        $queueDb['queue'] = 'download';
-        config(["queue.connections.database" => $queueDb]);
+        $redisConf = config("queue.connections.redis");
+        $redisConf['queue'] = 'download';
+        $redisConf['retry_after'] = 9999;
+        config(["queue.connections.redis" => $redisConf]);
         foreach ($connections as $connect)
         {
             try {
                 // Создание instance по полю name из таблицы connections в db connection
                 // Поле соответвует названию класса в app/Services/Downloading
-//                dispatch(new DownloadJob($connect['name'], $connect['id']))->onConnection('database')->onQueue('download');
-                (new DownloadJob($connect['name'], $connect['id']))->handle();
+                dispatch(new DownloadJob($connect['name'], $connect['id']))->onConnection('redis')->onQueue('download');
             } catch (\Throwable $exception) {
                 dump($exception->getMessage(),'File: '.$exception->getFile(),'Line: ', $exception->getLine());
             }

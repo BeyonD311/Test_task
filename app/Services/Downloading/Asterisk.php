@@ -5,8 +5,7 @@ namespace App\Services\Downloading;
 use App\Services\Connections\Options\DB;
 use App\Services\Connections\Options\Server;
 use App\Services\Driver;
-use App\Services\Protocols\Scp;
-use App\Services\Protocols\ScpSsh2;
+use App\Services\Downloading\Type\Scp;
 use Illuminate\Support\Facades\Artisan;
 use App\Services\Query\Asterisk as Query;
 use Illuminate\Support\Facades\Log;
@@ -43,7 +42,6 @@ class Asterisk extends DataService
      */
     public function download(): \DateTimeInterface
     {
-        $scp = new ScpSsh2($this->server, 'temp');
         $items = $this->getItems();
         if(empty($items->current())) {
             return $this->getDate();
@@ -51,15 +49,24 @@ class Asterisk extends DataService
         $date = $items->current()->calldate;
         foreach ($items as $item) {
             if($item->file != "" && $this->checkFileExists($item->file)) {
-                $scp->setPathDownload(self::$path.date("Y/m/d", strtotime($item->calldate)). "/".$item->file);
-                /*Artisan::call('file', [
-                    'connections' => serialize($scp),
+                $item->outputName = $this->generateName($item->file);
+                $item->file = self::$path.date("Y/m/d", strtotime($item->calldate)). "/".$item->file;
+                Artisan::call('file', [
+                    'connections' => serialize($this->server),
                     'item' => $item,
+                    'protocol' => Scp::class,
                     'type' => "Asterisk"
-                ]);*/
+                ]);
             }
         }
         return new \DateTime($date, $this->timeZone);
+    }
+
+    protected function generateName(string $name): string
+    {
+        $splitName = explode(".", $name);
+        $expansion = array_pop($splitName);
+        return implode(".", $splitName)."-{$this->db->getConnectionId()}.$expansion";
     }
 
     /**
@@ -69,8 +76,8 @@ class Asterisk extends DataService
     private function checkFileExists(string $name): bool
     {
         $tempName = preg_replace("/\.[a-z0-9]*$/", "", $name);
-        $wav = "$tempName-{$this->db->getId()}.wav";
-        $mp3 = "$tempName-{$this->db->getId()}.mp3";
+        $wav = "$tempName-{$this->db->getConnectionId()}.wav";
+        $mp3 = "$tempName-{$this->db->getConnectionId()}.mp3";
         if(file_exists("/var/www/storage/audio/".$wav)) {
             return false;
         } elseif (file_exists("/var/www/storage/audio/".$mp3)) {

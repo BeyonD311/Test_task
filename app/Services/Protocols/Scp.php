@@ -1,101 +1,45 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Services\Protocols;
 
 use App\Exceptions\Connection;
-use App\Interfaces\Host;
-use App\Services\File;
-use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
-class Scp implements IProtocols
+class Scp extends Protocol
 {
-    use SerializesModels;
 
-    protected string $download = "/var/www/storage/";
-
-    protected string $pathDownload;
-
+    const DOWNLOAD_PATH = "/var/www/storage/";
     protected $connect;
 
-
-    public function __construct
-    (
-        protected Host $server,
-        protected string $to
-    )
-    {}
-
-    public function setPathDownload(string $path)
+    /**
+     * @throws Connection
+     */
+    public function connect(): void
     {
-        $this->pathDownload = $path;
-        return $this;
-    }
-
-    protected function makeShhPass(): string
-    {
-        return "sshpass -p '".$this->server->getPass()."'";
-    }
-
-    protected function makeScp(): string
-    {
-        return "scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -rq ".
-            $this->server->getLogin().
-            "@".$this->server->getHost().
-            ":".$this->pathDownload.
-            " ".$this->download.$this->to;
-    }
-
-    public function getServer(): Host
-    {
-        return $this->server;
-    }
-
-    public function execute()
-    {
-        $this->checkOutPath();
-        $exec = $this->makeShhPass() ." ".$this->makeScp();
-        $output = [];
-        $code = 0;
-        exec($exec, $output, $code);
-        if ($code != 0) {
-            $logMessage = sprintf("Code: %d; Message: %s; \n Exec: %s",
-            $code, json_encode($output, JSON_PRETTY_PRINT), $exec);
-            Log::error($logMessage);
-            if ($code == 1) {
-                $output = "File not found";
+        $this->connect = ssh2_connect($this->server->getHost(), $this->server->getPort(), null, callbacks: [
+            "debug" => function($reason, $message, $always_display) {
+                Log::error(sprintf("reason: %s; $message: %s; language: %s", json_encode($reason, JSON_PRETTY_PRINT), $message, json_encode($always_display, JSON_PRETTY_PRINT)));
+            },
+            "disconnect" => function($reason, $message, $language) {
+                Log::error(sprintf("reason: %s; $message: %s; language: %s", json_encode($reason, JSON_PRETTY_PRINT), $message, $language));
             }
-            throw new Connection(json_encode($output, JSON_PRETTY_PRINT), 404);
+        ]);
+        if($this->connect === false) {
+            throw new Connection("Нет подключения к серверу");
         }
-        $oldName = $this->generateOrigName();
-        $newName = $this->download.'audio/'.$this->generateOutputName();
-        File::rename($oldName, $newName);
-        return $newName;
-    }
-
-    protected function checkOutPath()
-    {
-        if(strpos($this->pathDownload, ".gz") === false) {
-            return;
+        if(!ssh2_auth_password($this->connect, $this->server->getLogin(), $this->server->getPass())) {
+            throw new Connection("Аутентификация не пройдена");
         }
-        $this->to = "temp";
     }
 
-    public function generateOutputName(): string
+    /**
+     * @throws Connection
+     */
+    public function disconnect(): void
     {
-        $name = explode("/", $this->pathDownload);
-        $origName = array_pop($name);
-        $name = explode(".", $origName);
-        $expansion = array_pop($name);
-        $name[] = array_pop($name)."-".$this->server->getConnectionId().".".$expansion;
-        unset($expansion, $connectionId);
-        return implode('.', $name);
-    }
-
-    private function generateOrigName(): string
-    {
-        $name = explode("/", $this->pathDownload);
-        $origName = array_pop($name);
-        return $this->download.$this->to.'/'.$origName;
+        if(!ssh2_disconnect($this->connect)) {
+            throw new Connection("Ошибка при закрытии соединения");
+        }
     }
 }

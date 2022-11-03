@@ -52,6 +52,11 @@ class DownloadJob extends Job
             $dataLastUpdate = $instance->download();
 //            $this->instanceLustUpdate($instance)->updateOrCreate($connect->getId(), $dataLastUpdate->format("Y-m-d H:i:s"));
         } catch (\Throwable $exception) {
+            dump(sprintf("Message: %s; \n Line: %d; \n File: %s",
+                $exception->getMessage(),
+                $exception->getFile(),
+                $exception->getFile()
+            ));
             Log::error(sprintf("Message: %s; \n Line: %d; \n File: %s",
                 $exception->getMessage(),
                 $exception->getFile(),

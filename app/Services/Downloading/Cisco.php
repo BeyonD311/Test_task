@@ -4,8 +4,8 @@ namespace App\Services\Downloading;
 
 
 use App\Interfaces\ConnectionInterface;
-use App\Services\Protocols\Http;
 use App\Services\Connections\Options\Server;
+use App\Services\Downloading\Type\Http;
 use Illuminate\Support\Facades\Artisan;
 use App\Exceptions\Connection as ConnectException;
 use Illuminate\Support\Facades\Log;
@@ -40,6 +40,7 @@ class Cisco extends DataService
             if(file_exists("/var/www/storage/audio/".md5($item->file)."-".$this->server->getConnectionId().".wav")) {
                 continue;
             }
+            $item->outputName = md5($item->file)."-".$this->server->getConnectionId().".wav";
             $item->{'connection_id'} = $this->server->getConnectionId();
             $this->fileDownload($item);
         }
@@ -48,16 +49,11 @@ class Cisco extends DataService
 
     private function fileDownload($item)
     {
-        $context = [
-            'headers' => [
-                'Authorization' => 'Basic '.base64_encode($this->server->getLogin().':'.$this->server->getPass()),
-            ]
-        ];
-        $request = new Http();
-        /*Artisan::call('file', [
-            'connections' => $context,
-            'item' => $item,
+        Artisan::call('file', [
+            'connections' => serialize($this->server),
+            'item' => serialize($item),
+            'protocol' => Http::class,
             'type' => "Cisco"
-        ]);*/
+        ]);
     }
 }

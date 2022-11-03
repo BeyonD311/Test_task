@@ -74,9 +74,12 @@ class Cisco extends Query
 
     private function crawlingPage(int $from, int $to): \Generator
     {
+        $clientHttp = clone $this->connection->connection();
         while (true) {
-            $query = $this->connection->connection()->send("POST", "queryService/query/getSessions", $this->makeQuery($from, $to));
-            $response = json_decode($query->response()->getBody()->getContents(), true);
+            $clientHttp->setMethod("POST")
+                ->setUri("queryService/query/getSessions")
+                ->setBody($this->makeQuery($from, $to));
+            $response = $clientHttp->execute();
             if($response['responseCode'] == 2001) {
                 break;
             }

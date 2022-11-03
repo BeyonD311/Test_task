@@ -14,4 +14,5 @@ class FileDTO
     public string $calldate;
     public string $uniqueid;
     public string $connection_id;
+    public string $outputName;
 }
