@@ -1,15 +1,17 @@
 <?php
 
-namespace App\Services\Connections;
+namespace App\Services\Connections\Infrastructure;
 
-use App\Interfaces\ConnectionInterface;
-use App\Services\Connections\Options\DB;
+use App\Services\Connections\Domains\In\ConnectionInterface;
+use App\Services\Connections\Domains\Dto\DB;
 use App\Services\Driver;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Queue\SerializesModels;
 
 class Asterisk implements ConnectionInterface
 {
+    use SerializesModels;
     protected DatabaseManager $db;
     protected Driver $driver;
 

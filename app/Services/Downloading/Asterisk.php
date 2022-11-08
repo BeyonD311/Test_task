@@ -2,8 +2,8 @@
 
 namespace App\Services\Downloading;
 
-use App\Services\Connections\Options\DB;
-use App\Services\Connections\Options\Server;
+use App\Services\Connections\DTO\DB;
+use App\Services\Connections\DTO\Server;
 use App\Services\Driver;
 use App\Services\Downloading\Type\Scp;
 use Illuminate\Support\Facades\Artisan;

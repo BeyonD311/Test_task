@@ -1,13 +1,15 @@
 <?php
 
-namespace App\Services\Connections;
+namespace App\Services\Connections\Infrastructure;
 
 use App\Exceptions\Connection;
-use App\Services\Connections\Options\Server;
+use App\Services\Connections\DTO\Server;
 use App\Services\Protocols\Http;
+use Illuminate\Queue\SerializesModels;
 
 class Cisco implements \App\Interfaces\ConnectionInterface
 {
+    use SerializesModels;
     protected Http $httpClient;
 
     private array $cookie = [

@@ -4,7 +4,7 @@ namespace App\Services\Downloading;
 
 
 use App\Interfaces\ConnectionInterface;
-use App\Services\Connections\Options\Server;
+use App\Services\Connections\DTO\Server;
 use App\Services\Downloading\Type\Http;
 use Illuminate\Support\Facades\Artisan;
 use App\Exceptions\Connection as ConnectException;
@@ -42,7 +42,7 @@ class Cisco extends DataService
             }
             $item->outputName = md5($item->file)."-".$this->server->getConnectionId().".wav";
             $item->{'connection_id'} = $this->server->getConnectionId();
-            $this->fileDownload($item);
+//            $this->fileDownload($item);
         }
         return new \DateTime(date('Y-m-d H:i:s', $maxDate), $this->timeZone);
     }

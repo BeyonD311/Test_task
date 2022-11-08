@@ -36,7 +36,8 @@ class FileDownload extends Command
             $redisConf['retry_after'] = 9999;
             config(["queue.connections.redis" => $redisConf]);
             $handlerDownload = new DownloadFile($this->argument('protocol'), $this->argument('item'), $this->argument('connections'),$this->argument('type'));
-            dispatch($handlerDownload)->onConnection('redis')->onQueue($this->argument('type'));
+//            dispatch($handlerDownload)->onConnection('redis')->onQueue($this->argument('type'));
+            $handlerDownload->handle();
         } catch (\Throwable $exception) {
             Log::error(sprintf("Message: %s \n; File: %s \n; Line: %s \n", $exception->getMessage(), $exception->getFile(), $exception->getLine()));
         }

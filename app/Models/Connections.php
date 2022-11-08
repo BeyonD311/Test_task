@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use App\Services\Connections\Options\DB;
-use App\Services\Connections\Options\Server;
+use App\Services\Connections\DTO\DB;
+use App\Services\Connections\DTO\Server;
 use Illuminate\Database\Eloquent\Collection;
 
 class Connections extends \Illuminate\Database\Eloquent\Model
@@ -82,9 +82,9 @@ class Connections extends \Illuminate\Database\Eloquent\Model
         if (empty($connection)) {
             throw new \App\Exceptions\Connection("Соединений не найдено", 404);
         }
-        $db = $connection->getRelation('databaseConnection');
-        $server = $connection->getRelation('serverConnection');
-        if (isset($db)) {
+        /*$db = $connection->getRelation('databaseConnection');
+        $server = $connection->getRelation('serverConnection');*/
+        /*if (isset($db)) {
             $db = (new DB())
                 ->setPass($db->pass)
                 ->setLogin($db->login)
@@ -104,7 +104,7 @@ class Connections extends \Illuminate\Database\Eloquent\Model
         }
         $connection = $connection->toArray();
         $connection['server_connection'] = $server;
-        $connection['database_connection'] = $db;
+        $connection['database_connection'] = $db;*/
 
         return $connection;
     }

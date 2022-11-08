@@ -20,8 +20,8 @@ return new class extends Migration
             $table->integer('port');
             $table->string('login');
             $table->string('pass');
-            $table->boolean('availability');
             $table->string('table');
+            $table->string('schema');
             $table->json('error')->default(null);
             $table->timestamps();
             $table->foreign('connection_id')

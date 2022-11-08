@@ -16,8 +16,8 @@ return new class extends Migration
         Schema::create('connections', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('mac_address');
             $table->string('type_connection');
+            $table->boolean("power")->default(false);
         });
     }
 
