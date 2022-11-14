@@ -2,19 +2,14 @@
 
 namespace App\Services\Query;
 
-use App\Interfaces\ConnectionInterface;
-use App\Interfaces\QueryInterface;
+use App\Services\Interfaces\Connection;
+use App\Services\Interfaces\QueryInterface;
 
 abstract class Query implements QueryInterface
 {
     protected array $paginate;
     protected bool $crawling = false;
-
-    public function __construct(
-        protected ConnectionInterface $connection
-    )
-    {
-    }
+    protected Connection $connection;
 
     /**
      * @inheritDoc
@@ -42,6 +37,12 @@ abstract class Query implements QueryInterface
     public function getPaginate(): array
     {
         return $this->paginate;
+    }
+
+    public function setConnection(Connection $connection): QueryInterface
+    {
+        $this->connection = $connection;
+        return $this;
     }
 
 }

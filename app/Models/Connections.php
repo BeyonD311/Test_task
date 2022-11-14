@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
-use App\Services\Connections\DTO\DB;
-use App\Services\Connections\DTO\Server;
+use App\Services\Dto\Connection;
+use App\Services\Factory\Dto;
+use App\Services\Dto\DB;
+use App\Services\Dto\Server;
 use Illuminate\Database\Eloquent\Collection;
 
 class Connections extends \Illuminate\Database\Eloquent\Model
@@ -74,38 +76,20 @@ class Connections extends \Illuminate\Database\Eloquent\Model
      * @return array
      * @throws \App\Exceptions\Connection
      */
-    public static function infoFromConnection(int $id = 0): array
+    public static function infoFromConnection(int $id = 0): Connection
     {
         $connection = self::with(['serverConnection', 'databaseConnection'])->where([
             ['id', '=', $id]
-        ])->first();
+        ])->first()->toArray();
         if (empty($connection)) {
             throw new \App\Exceptions\Connection("Соединений не найдено", 404);
         }
-        /*$db = $connection->getRelation('databaseConnection');
-        $server = $connection->getRelation('serverConnection');*/
-        /*if (isset($db)) {
-            $db = (new DB())
-                ->setPass($db->pass)
-                ->setLogin($db->login)
-                ->setConnectionId($id)
-                ->setPort($db->port)
-                ->setId($db->id)
-                ->setHost($db->host);
+        if(is_null($connection['database_connection'])) {
+            $connection['database_connection'] = [];
         }
-        if (isset($server)) {
-            $server = (new Server())
-                ->setHost($server->host)
-                ->setPort($server->port)
-                ->setLogin($server->login)
-                ->setConnectionId($id)
-                ->setPass($server->pass)
-                ->setId($server->id);
-        }
-        $connection = $connection->toArray();
-        $connection['server_connection'] = $server;
-        $connection['database_connection'] = $db;*/
-
-        return $connection;
+        $connection['db'] = Dto::getInstance(DB::class, $connection['database_connection']);
+        $connection['server'] = Dto::getInstance(Server::class, $connection['server_connection']);
+        unset($connection['database_connection'], $connection['server_connection']);
+        return Dto::getInstance(Connection::class, $connection);
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Connections\Domains\Dto;
+namespace App\Services\Dto;
 
 class Server
 {

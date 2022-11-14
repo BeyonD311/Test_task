@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Dto;
 
 use Illuminate\Queue\SerializesModels;
 
-class FileDTO
+class File
 {
     use SerializesModels;
     public float $duration;

@@ -4,29 +4,24 @@ namespace App\Http\Controllers;
 
 
 use App\Models\Connections;
-use App\Services\Downloading\Cisco;
-use GuzzleHttp\Client;
+use App\Services\Query\Asterisk;
+use \App\Services\Query\Cisco;
+use App\Services\Factory\ConnectionFactory;
+use App\Services\Query\ContextQuery;
 
 class TestController extends Controller
 {
-    public function __construct(protected Connections $connections)
-    {}
-
     public function test() {
         app('db');
-        $client = new Client([
-            'cookies' => true,
-        ]);
-        $file = \GuzzleHttp\Psr7\Utils::tryFopen('/var/www/test.wav', 'a+');
-        $response = $client->request('GET', 'https://10.3.0.42:8446/recordedMedia/oramedia/wav/68183acf2e5461.wav', [
-            'verify' => false,
-            'headers' => [
-                'Cookie' => 'JSESSIONID=42B63F8D2B76E71CDCEE2AB77BEC7BD0',
-                'Authorization' => 'Basic bXMwMTpQQHNzdzByZDE='
-            ],
-            'save_to' => $file
-        ]);
+        $dto = Connections::infoFromConnection(1);
+        $queryAsterisk = new Asterisk();
+        $queryCisco = new Cisco();
+        $queryContext = new ContextQuery();
+        $connection = ConnectionFactory::getInstance($dto);
+        $queryContext->setContext($queryAsterisk, $connection);
+        $queryContext->setOptions();
+        foreach ($queryContext->getItems("2022-09-01", "2022-11-09") as $item) {
+            dump($item);
+        }
     }
-
-    //
 }

@@ -1,18 +1,20 @@
 <?php
 
-namespace App\Interfaces;
+namespace App\Services\Interfaces;
 
 interface QueryInterface
 {
+    public function setConnection(Connection $connection): QueryInterface;
     /**
      * Пагинация для добавления пагинации
      * @param $page
      * @param $size
-     * @return $this
+     * @return QueryInterface
      */
-    public function setPaginate($page, $size): static;
+    public function setPaginate($page, $size): QueryInterface;
 
     public function getPaginate(): array;
+
     /**
      * @getItems принимиет два параметра даты
      * @param string $from - начала
@@ -22,7 +24,7 @@ interface QueryInterface
     public function getItems(string $from, string $to):\Generator;
 
     /**
-     * Влючить обход всех страниц
+     * Включить обход всех страниц
      * @return $this
      */
     public function onCrawlingPages(): static;

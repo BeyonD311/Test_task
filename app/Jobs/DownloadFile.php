@@ -5,7 +5,7 @@ namespace App\Jobs;
 use App\Exceptions\Connection;
 use App\Models\CallInfo;
 use App\Models\Files;
-use App\Services\FileDTO;
+use App\Services\File;
 use App\Services\Protocols\IProtocols;
 use \Illuminate\Support\Facades\Log;
 
@@ -55,9 +55,9 @@ class DownloadFile extends Job
 
     /**
      * Создает файл CallInfo
-     * @param FileDTO $file
+     * @param File $file
      */
-    private function createCallInfo(FileDTO $file): void
+    private function createCallInfo(File $file): void
     {
         $callInfo = [
             "service" => $this->type,

@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Models\LastUpdate as ModelLastUpdate;
 
-class LastUpdate implements \App\Interfaces\LastUpdate
+final class LastUpdate
 {
     protected string $typeConnection;
 

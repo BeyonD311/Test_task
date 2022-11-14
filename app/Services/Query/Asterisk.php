@@ -2,8 +2,8 @@
 
 namespace App\Services\Query;
 
-use App\Services\DtoFactory;
-use App\Services\FileDTO;
+use App\Services\Factory\Dto as DtoFactory;
+use App\Services\Dto\File;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class Asterisk extends Query
@@ -34,7 +34,7 @@ class Asterisk extends Query
      * @param $where
      * @return array
      */
-	private function makeQuery($where): LengthAwarePaginator
+	private function makeQuery($where)
     {
         $items = $this->connection->connection()->where($where)
             ->groupBy('cdr.linkedid')
@@ -53,11 +53,13 @@ class Asterisk extends Query
      */
     private function crawlingPages(array $where): \Generator
     {
+        $result = [];
         while (true) {
             $items = $this->makeQuery($where);
             if (empty($items)) {
                 break;
             }
+            /**@var \Illuminate\Pagination\LengthAwarePaginator $items*/
             foreach ($items->items() as $item) {
                 $prop = [
                     'file' => $item->recordingfile,
@@ -65,10 +67,13 @@ class Asterisk extends Query
                     'dst' => $item->dst,
                     'duration' => $item->duration,
                     'uniqueid' => $item->uniqueid,
-                    'calldate' => $item->calldate
+                    'calldate' => $item->calldate,
+                    'connection_id' => $this->connection->getParam('id'),
+                    'outputName' => $this->outputName($item->recordingfile)
                 ];
-                yield DtoFactory::createDto(FileDTO::class, $prop);
+                $result[] = DtoFactory::getInstance(File::class, $prop);
             }
+            yield $result;
             $this->paginate['page']++;
         }
     }
@@ -79,6 +84,13 @@ class Asterisk extends Query
         foreach ($items as $item) {
             yield $item->recordingfile => $item;
         }
+    }
+
+    private function outputName($file): string
+    {
+        $name = explode(".", $file);
+        $expansion = array_pop($name);
+        return implode(".", $name)."-".$this->connection->getParam('id').".$expansion";
     }
 
     public function getNumbersOfRecords(string $from, string $to): int

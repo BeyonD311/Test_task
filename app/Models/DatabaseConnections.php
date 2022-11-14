@@ -13,6 +13,8 @@ class DatabaseConnections extends \Illuminate\Database\Eloquent\Model
         "pass",
         "availability",
         "error",
+        "table",
+        "schema",
         "created_at",
         "updated_at"
     ];

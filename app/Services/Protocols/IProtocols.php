@@ -2,11 +2,11 @@
 
 namespace App\Services\Protocols;
 
-use App\Services\FileDTO;
+use App\Services\Dto\File;
 
 interface IProtocols
 {
-    public function setFile(FileDTO $file): IProtocols;
-    public function getFile(): FileDTO;
+    public function setFile(File $file): IProtocols;
+    public function getFile(): File;
     public function execute();
 }

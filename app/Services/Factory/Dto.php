@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Connections\Domains\Factory;
+namespace App\Services\Factory;
 use ReflectionClass;
 
 class Dto
@@ -11,11 +11,13 @@ class Dto
     public static function getInstance(string $dto, array $values)
     {
         $reflection = new ReflectionClass($dto);
+        $dto = $reflection->newInstance();
         foreach ($reflection->getProperties() as $property) {
             if(isset($values[$property->getName()])) {
-                $property->setValue($values[$property->getName()]);
+                $property->setAccessible(true);
+                $property->setValue($dto, $values[$property->getName()]);
             }
         }
-        return $reflection->newInstance();
+        return $dto;
     }
 }

@@ -3,7 +3,7 @@
 namespace App\Services\Protocols;
 use App\Exceptions\Connection;
 use App\Interfaces\Host;
-use App\Services\FileDTO;
+use App\Services\File;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Support\Facades\Log;
@@ -13,7 +13,7 @@ class Http extends Protocol
     protected string $method;
     protected string $uri;
     protected $body;
-    protected FileDTO $file;
+    protected File $file;
     protected Response $response;
 
     protected Client $client;

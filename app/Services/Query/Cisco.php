@@ -3,9 +3,8 @@
 namespace App\Services\Query;
 
 use App\Exceptions\Connection;
-use App\Exceptions\Connection as ConnectException;
-use App\Services\DtoFactory;
-use App\Services\FileDTO;
+use App\Services\Factory\Dto as DtoFactory;
+use App\Services\Dto\File;
 
 class Cisco extends Query
 {
@@ -74,12 +73,12 @@ class Cisco extends Query
 
     private function crawlingPage(int $from, int $to): \Generator
     {
-        $clientHttp = clone $this->connection->connection();
+        /**@var \Illuminate\Http\Client\PendingRequest $clientHttp*/
+        $clientHttp = $this->connection->connection();
+        $query = $this->makeQuery($from, $to);
+        $query['cookies'] = $this->connection->cookie;
         while (true) {
-            $clientHttp->setMethod("POST")
-                ->setUri("queryService/query/getSessions")
-                ->setBody($this->makeQuery($from, $to));
-            $response = $clientHttp->execute();
+            $response = $clientHttp->send("POST", "queryService/query/getSessions", $query)->json();
             if($response['responseCode'] == 2001) {
                 break;
             }
@@ -100,10 +99,11 @@ class Cisco extends Query
                 $param['duration'] = $duration / 1000;
                 $param['calldate'] = date("Y-m-d H:i:s", $item["sessionStartDate"] / 1000);
                 $param['uniqueid'] = md5($item['urls']['wavUrl']);
+                $param['outputName'] = md5($item['urls']['wavUrl']).".wav";
+                $param['connection_id'] = $this->connection->getParam('id');
                 $param = array_merge($param, $this->generatePhone($item['tracks']));
-                $items[] = DtoFactory::createDto(FileDTO::class, $param);
+                yield DtoFactory::getInstance(File::class, $param);
             }
-            yield $items;
         }
     }
 

@@ -3,29 +3,29 @@
 namespace App\Services\Protocols;
 
 use App\Interfaces\Host;
-use App\Services\FileDTO;
+use App\Services\Dto\File;
 use Illuminate\Queue\SerializesModels;
 
 abstract class Protocol implements IProtocols
 {
     use SerializesModels;
-    protected FileDTO $file;
+    protected File $file;
 
     public function __construct(protected Host $server)
     {
     }
 
     /**
-     * @param FileDTO $file
+     * @param File $file
      * @return $this
      */
-    public function setFile(FileDTO $file): Protocol
+    public function setFile(File $file): Protocol
     {
         $this->file = $file;
         return $this;
     }
 
-    public function getFile(): FileDTO
+    public function getFile(): File
     {
         return $this->file;
     }
