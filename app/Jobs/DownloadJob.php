@@ -3,26 +3,28 @@
 namespace App\Jobs;
 use App\Interfaces\Host;
 use App\Models\Connections;
-use App\Services\LastUpdate;
+use App\Services\Factory\ConnectionFactory;
+use App\Models\LastUpdate;
+use App\Services\Query\Asterisk;
+use App\Services\Query\Cisco;
+use App\Services\Query\ContextQuery;
 use Illuminate\Support\Facades\Log;
 
 class DownloadJob extends Job
 {
-    protected string $name;
     protected int $id;
     protected string $data;
-    protected Host $database;
-    protected Host $server;
     protected $lastUpdate;
+
+    const AUDIO_PATH = "/var/www/storage/audio/";
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct($name, $id, $data = "")
+    public function __construct($id, $data = "")
     {
-        $this->name = $name;
         $this->id = $id;
         $this->data = $data;
         $this->lastUpdate = null;
@@ -37,53 +39,73 @@ class DownloadJob extends Job
     {
         try {
             app('db');
-            $nameDownloading = ucfirst(strtolower($this->name));
-            $instance = "App\Services\Downloading\\$nameDownloading";
-            $connect = Connections::infoFromConnection($this->id);
-            /**@var \App\Services\Downloading\DataService $instance*/
-            $instance = match (strtolower($this->name)) {
-                'asterisk' => new $instance($connect['server_connection'], $connect['database_connection']),
-                'cisco' => new $instance($connect['server_connection']),
-                'uc' => new $instance($connect['server_connection'], $connect['database_connection'])
-            };
-            $connect = $connect['database_connection'] === null ? $connect['server_connection'] : $connect['database_connection'];
-            $dateNow = $this->createDate($connect, $instance);
-            $instance->setDate($dateNow);
-            $dataLastUpdate = $instance->download();
-//            $this->instanceLustUpdate($instance)->updateOrCreate($connect->getId(), $dataLastUpdate->format("Y-m-d H:i:s"));
+            $dto = Connections::infoFromConnection($this->id);
+            $nameClass = ucfirst($dto->name);
+            $queryClass = "App\Services\Query\\$nameClass";
+            if(!class_exists($queryClass)) {
+                throw new \Exception("Query Class not found $queryClass");
+            }
+            /**
+             * Получение последней даты звонка и текущей даты
+             */
+            $lastUpdate = LastUpdate::getLastUpdate($dto->id)->modify("-2 hours");
+            $lastUpdateMS = $lastUpdate->getTimestamp();
+            $currentDate = $this->currentDate();
+            // Создание выборки
+            $queryContext = new ContextQuery();
+            $connection = ConnectionFactory::getInstance($dto);
+            $queryClass = new $queryClass;
+            $queryContext->setContext($queryClass, $connection);
+            $queryContext->setOptions();
+            $download = new \App\Services\Downloading\DownloadFile();
+            /**
+             * @var \App\Services\DTO\File $item
+             */
+            foreach ($queryContext->getItems($lastUpdate->format("Y-m-d H:i:s"), $currentDate->format("Y-m-d H:i:s")) as $item) {
+                if($this->checkFile($item->outputName)) {
+                    continue;
+                }
+                $download->setFile($item);
+                $download->download();
+                $calldate = strtotime($item->calldate);
+                if($calldate > $lastUpdateMS) {
+                    $lastUpdateMS = $calldate;
+                }
+            }
+//            LastUpdate::setLastUpdate($dto->id, date("Y-m-d H:i:s", $lastUpdateMS));
         } catch (\Throwable $exception) {
-            dump(sprintf("Message: %s; \n Line: %d; \n File: %s",
+            $log = sprintf("Message: %s; \n Line: %d; \n File: %s",
                 $exception->getMessage(),
                 $exception->getFile(),
                 $exception->getFile()
-            ));
-            Log::error(sprintf("Message: %s; \n Line: %d; \n File: %s",
-                $exception->getMessage(),
-                $exception->getFile(),
-                $exception->getFile()
-            ));
+            );
+            Log::error($log);
             $this->fail($exception);
         }
     }
 
-    private function createDate($connect, $instance): \DateTimeInterface
+    private function currentDate(): \DateTime
     {
         $timeZone = new \DateTimeZone('Europe/Moscow');
-        if($this->data !== "") {
-            return new \DateTime($this->data, $timeZone);
-        }
-        return new \DateTime($this->instanceLustUpdate($instance)->getStringDate($connect->getId()), $timeZone);
+        return new \DateTime("now", $timeZone);
     }
 
     /**
-     * @param $instance
-     * @return LastUpdate
+     * проверка файла на существование
+     * @param string $name
+     * @return bool
      */
-    private function instanceLustUpdate($instance): LastUpdate
+    private function checkFile(string $name): bool
     {
-        if(is_null($this->lastUpdate)) {
-            $this->lastUpdate = new LastUpdate($instance->getConnectionType());
+        $name = preg_replace("/\.[a-z0-9]*$/", "", $name);
+        $wav = $name.".wav";
+        $mp3 = $name.".mp3";
+        if(file_exists(static::AUDIO_PATH.$wav)) {
+            return true;
         }
-        return $this->lastUpdate;
+        if(file_exists(static::AUDIO_PATH.$mp3)) {
+            return true;
+        }
+        return false;
     }
 }

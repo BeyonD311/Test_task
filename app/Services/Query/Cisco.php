@@ -13,9 +13,10 @@ class Cisco extends Query
         $from = convertDateToMillisecond($from);
         $to = convertDateToMillisecond($to);
         $items = $this->crawlingPage($from, $to);
-        foreach ($items as $item) {
-            foreach ($item as $i) {
-                yield $i;
+        foreach ($items as $collectionItems) {
+            foreach ($collectionItems as $item)
+            {
+                yield $item;
             }
         }
     }
@@ -76,7 +77,9 @@ class Cisco extends Query
         /**@var \Illuminate\Http\Client\PendingRequest $clientHttp*/
         $clientHttp = $this->connection->connection();
         $query = $this->makeQuery($from, $to);
+        $query["json"]["pageParameters"]["offset"] = $query["json"]["pageParameters"]["offset"] - 1;
         $query['cookies'] = $this->connection->cookie;
+        $items = [];
         while (true) {
             $response = $clientHttp->send("POST", "queryService/query/getSessions", $query)->json();
             if($response['responseCode'] == 2001) {
@@ -86,7 +89,6 @@ class Cisco extends Query
                 throw new Connection("", 500);
             }
             $this->paginate['page'] += $this->paginate['size'];
-            $items = [];
             foreach ($response['responseBody']['sessions'] as $item) {
                 $param = [
                     "file" => $item['urls']['wavUrl'],
@@ -99,11 +101,16 @@ class Cisco extends Query
                 $param['duration'] = $duration / 1000;
                 $param['calldate'] = date("Y-m-d H:i:s", $item["sessionStartDate"] / 1000);
                 $param['uniqueid'] = md5($item['urls']['wavUrl']);
-                $param['outputName'] = md5($item['urls']['wavUrl']).".wav";
+                $param['outputName'] = md5($item['urls']['wavUrl'])."-".$this->connection->getParam('id').".wav";
                 $param['connection_id'] = $this->connection->getParam('id');
+                $param['downloadMethod'] = $this->connection->getParam("type_connection");
+                $param['queue'] = "Cisco";
+                $param['options']['cookie'] = $this->connection->cookie;
                 $param = array_merge($param, $this->generatePhone($item['tracks']));
-                yield DtoFactory::getInstance(File::class, $param);
+                $items[] = DtoFactory::getInstance(File::class, $param);
             }
+            $query["json"]["pageParameters"]["offset"] += $query["json"]["pageParameters"]['limit'];
+            yield $items;
         }
     }
 

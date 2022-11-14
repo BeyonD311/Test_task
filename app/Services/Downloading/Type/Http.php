@@ -3,6 +3,8 @@
 namespace App\Services\Downloading\Type;
 
 use App\Exceptions\Connection;
+use GuzzleHttp\Cookie\CookieJar;
+use GuzzleHttp\Cookie\SetCookie;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use App\Services\Protocols\Http as HttpProtocol;
@@ -13,15 +15,10 @@ class Http extends HttpProtocol
 
     public function execute()
     {
-        unset($this->client);
-        $file = $this->getFile();
-        $path = "/var/www/storage/temp/{$file->outputName}";
-        Log::info(json_encode($this->body, JSON_PRETTY_PRINT));
-//        $this->response = $this->client->request($this->method, $this->uri, $this->body);
-        $this->response = \Illuminate\Support\Facades\Http::withOptions([
-
-        ]);
-        dd($this->method, $this->uri, $this->body);
+        $path = "/var/www/storage/temp/{$this->file->outputName}";
+        $this->file->file = str_replace("https", "http", $this->file->file);
+        $response = file_get_contents($this->file->file);
+        dd($response);
        /* if($this->response->getStatusCode() !== 200) {
             throw new Connection("Ошибка при выполнении запроса; \n Status-code: {$this->response->getStatusCode()}; \n Response: {$this->response->getBody()->getContents()}");
         }

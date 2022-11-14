@@ -5,21 +5,34 @@ namespace App\Jobs;
 use App\Exceptions\Connection;
 use App\Models\CallInfo;
 use App\Models\Files;
-use App\Services\File;
+use App\Services\DTO\File;
 use App\Services\Protocols\IProtocols;
 use \Illuminate\Support\Facades\Log;
 
 class DownloadFile extends Job
 {
     protected IProtocols $protocol;
-    public function __construct(string $protocol, string $item, string $connection, protected string $type)
+    protected File $file;
+    public function __construct(string $item)
     {
-        $this->setProtocol($protocol,$item,$connection);
+        $this->file = unserialize($item);
     }
 
     public function handle()
     {
-        $exception = "empty";
+        try {
+            /**@var \App\Services\Protocols\IProtocols $protocol*/
+            $protocol = "App\Services\Downloading\Type\\".ucfirst($this->file->downloadMethod);
+            if(!class_exists($protocol)) {
+                throw new \Exception("Протокол загрузки файла не обнаружен");
+            }
+            $protocol = new $protocol($this->file);
+            $protocol->execute();
+        } catch (\Throwable $throwable) {
+            dd($throwable);
+        }
+
+        /*$exception = "empty";
         try {
             $this->protocol->execute();
         } catch (\Throwable $throwable) {
@@ -49,7 +62,7 @@ class DownloadFile extends Job
                 $file->save();
                 throw $exception;
             }
-        }
+        }*/
         return 0;
     }
 

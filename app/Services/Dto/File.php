@@ -15,4 +15,7 @@ class File
     public string $uniqueid;
     public string $connection_id;
     public string $outputName;
+    public string $downloadMethod;
+    public string $queue;
+    public array $options = [];
 }

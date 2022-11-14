@@ -13,7 +13,7 @@ class FileDownload extends Command
      *
      * @var string
      */
-    protected $signature = 'file {connections} {item} {protocol} {type}';
+    protected $signature = 'file {item}';
 
     /**
      * The console command description.
@@ -31,15 +31,17 @@ class FileDownload extends Command
     {
         try {
             app('queue');
+            $file = unserialize($this->argument('item'));
             $redisConf = config("queue.connections.redis");
-            $redisConf['queue'] = $this->argument('type');
+            $redisConf['queue'] = $file->queue;
             $redisConf['retry_after'] = 9999;
             config(["queue.connections.redis" => $redisConf]);
-            $handlerDownload = new DownloadFile($this->argument('protocol'), $this->argument('item'), $this->argument('connections'),$this->argument('type'));
-//            dispatch($handlerDownload)->onConnection('redis')->onQueue($this->argument('type'));
+            $handlerDownload = new DownloadFile($this->argument('item'));
+//            dispatch($handlerDownload)->onConnection('redis')->onQueue($file->queue);
             $handlerDownload->handle();
         } catch (\Throwable $exception) {
             Log::error(sprintf("Message: %s \n; File: %s \n; Line: %s \n", $exception->getMessage(), $exception->getFile(), $exception->getLine()));
+            throw $exception;
         }
         return 0;
     }

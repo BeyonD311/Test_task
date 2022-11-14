@@ -24,7 +24,11 @@ class Asterisk extends Query
             ['cdr.recordingfile', '!=', ""]
         ];
         if($this->crawling) {
-            return $this->crawlingPages($where);
+            foreach ($this->crawlingPages($where) as $items) {
+                foreach ($items as $item) {
+                    yield $item;
+                }
+            }
         }
 
         return $this->iteration($where);
@@ -61,15 +65,21 @@ class Asterisk extends Query
             }
             /**@var \Illuminate\Pagination\LengthAwarePaginator $items*/
             foreach ($items->items() as $item) {
+                $file = env('ASTERISK_DIR').date('Y/m/d/', strtotime($item->calldate)).$item->recordingfile;
                 $prop = [
-                    'file' => $item->recordingfile,
+                    'file' => $file,
                     'src' => $item->src,
                     'dst' => $item->dst,
                     'duration' => $item->duration,
                     'uniqueid' => $item->uniqueid,
                     'calldate' => $item->calldate,
                     'connection_id' => $this->connection->getParam('id'),
-                    'outputName' => $this->outputName($item->recordingfile)
+                    'outputName' => $this->outputName($item->recordingfile),
+                    'downloadMethod' => $this->connection->getParam('type_connection'),
+                    'options' => [
+                        'server' => $this->connection->getParam('server')
+                    ],
+                    'queue' => 'Asterisk'
                 ];
                 $result[] = DtoFactory::getInstance(File::class, $prop);
             }

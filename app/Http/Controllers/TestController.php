@@ -12,16 +12,16 @@ use App\Services\Query\ContextQuery;
 class TestController extends Controller
 {
     public function test() {
-        app('db');
-        $dto = Connections::infoFromConnection(1);
+        /*app('db');
+        $dto = Connections::infoFromConnection(2);
         $queryAsterisk = new Asterisk();
         $queryCisco = new Cisco();
         $queryContext = new ContextQuery();
         $connection = ConnectionFactory::getInstance($dto);
-        $queryContext->setContext($queryAsterisk, $connection);
+        $queryContext->setContext($queryCisco, $connection);
         $queryContext->setOptions();
-        foreach ($queryContext->getItems("2022-09-01", "2022-11-09") as $item) {
-            dump($item);
-        }
+        foreach ($queryContext->getItems("2022-01-01", "2022-11-09") as $item) {
+
+        }*/
     }
 }

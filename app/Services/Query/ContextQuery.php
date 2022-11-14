@@ -11,7 +11,7 @@ class ContextQuery
     public function setOptions()
     {
         $this->context
-            ->setPaginate(1, 100)
+            ->setPaginate(1, 1000)
             ->onCrawlingPages();
     }
 

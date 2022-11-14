@@ -7,6 +7,8 @@ use App\Services\Protocols\Scp as ScpProtocol;
 
 class Scp extends ScpProtocol
 {
+    const DOWNLOAD_PATH = "/var/www/storage/";
+
     public function execute()
     {
         $path = static::DOWNLOAD_PATH."temp/{$this->file->outputName}";
