@@ -11,6 +11,8 @@ use \Illuminate\Support\Facades\Log;
 class DownloadFile extends Job
 {
     protected File $file;
+    public $timeout = 9999;
+
     public function __construct(string $item)
     {
         $this->file = unserialize($item);
