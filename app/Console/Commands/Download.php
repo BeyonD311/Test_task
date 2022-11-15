@@ -40,8 +40,7 @@ class Download extends Command
             try {
                 // Создание instance по полю name из таблицы connections в db connection
                 // Поле соответвует названию класса в app/Services/Downloading
-//                dispatch(new DownloadJob($connect['name'], $connect['id']))->onConnection('redis')->onQueue('download');
-                (new DownloadJob($connect['id']))->handle();
+                dispatch(new DownloadJob($connect['id']))->onConnection('redis')->onQueue('download');
             } catch (\Throwable $exception) {
                 dump($exception->getMessage(),'File: '.$exception->getFile(),'Line: ', $exception->getLine());
             }

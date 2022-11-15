@@ -3,19 +3,20 @@
 namespace App\Services\Query;
 
 use App\Services\Interfaces\Connection;
+use App\Services\Interfaces\QueryInterface;
 
 class ContextQuery
 {
-    private Query $context;
+    private QueryInterface $context;
 
-    public function setOptions()
+    public function setOptions($page = 1, $size = 1000)
     {
         $this->context
-            ->setPaginate(1, 1000)
+            ->setPaginate($page, $size)
             ->onCrawlingPages();
     }
 
-    public function setContext(Query $context, Connection $connection)
+    public function setContext(QueryInterface $context, Connection $connection)
     {
         $this->context = $context;
         $this->context->setConnection($connection);
@@ -29,5 +30,15 @@ class ContextQuery
     public function getItems(string $from, string $to): \Generator
     {
         return $this->context->getItems($from, $to);
+    }
+
+    /**
+     * @param string $from - дата старт
+     * @param string $to - дата конец
+     * @return int
+     */
+    public function getNumbersOfRecords(string $from, string $to): int
+    {
+        return $this->context->getNumbersOfRecords($from, $to);
     }
 }

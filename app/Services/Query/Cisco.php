@@ -103,14 +103,17 @@ class Cisco extends Query
                 $param['uniqueid'] = md5($item['urls']['wavUrl']);
                 $param['outputName'] = md5($item['urls']['wavUrl'])."-".$this->connection->getParam('id').".wav";
                 $param['connection_id'] = $this->connection->getParam('id');
+                $param['connection_name'] = "Cisco";
                 $param['downloadMethod'] = $this->connection->getParam("type_connection");
                 $param['queue'] = "Cisco";
                 $param['options']['cookie'] = $this->connection->cookie;
+                $param['options']['server'] = $this->connection->getParam('server');
                 $param = array_merge($param, $this->generatePhone($item['tracks']));
                 $items[] = DtoFactory::getInstance(File::class, $param);
             }
             $query["json"]["pageParameters"]["offset"] += $query["json"]["pageParameters"]['limit'];
             yield $items;
+            $items = [];
         }
     }
 

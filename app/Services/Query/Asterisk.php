@@ -76,6 +76,7 @@ class Asterisk extends Query
                     'connection_id' => $this->connection->getParam('id'),
                     'outputName' => $this->outputName($item->recordingfile),
                     'downloadMethod' => $this->connection->getParam('type_connection'),
+                    'connection_name' => "Asterisk",
                     'options' => [
                         'server' => $this->connection->getParam('server')
                     ],

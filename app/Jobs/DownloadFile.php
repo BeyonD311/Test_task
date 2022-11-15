@@ -2,16 +2,14 @@
 
 namespace App\Jobs;
 
-use App\Exceptions\Connection;
 use App\Models\CallInfo;
 use App\Models\Files;
 use App\Services\DTO\File;
-use App\Services\Protocols\IProtocols;
+use Exception;
 use \Illuminate\Support\Facades\Log;
 
 class DownloadFile extends Job
 {
-    protected IProtocols $protocol;
     protected File $file;
     public function __construct(string $item)
     {
@@ -20,94 +18,70 @@ class DownloadFile extends Job
 
     public function handle()
     {
+        $exception = "empty";
         try {
             /**@var \App\Services\Protocols\IProtocols $protocol*/
-            $protocol = "App\Services\Downloading\Type\\".ucfirst($this->file->downloadMethod);
-            if(!class_exists($protocol)) {
-                throw new \Exception("Протокол загрузки файла не обнаружен");
+            $protocolClass = "App\Services\Downloading\Type\\".ucfirst($this->file->downloadMethod);
+            if(!class_exists($protocolClass)) {
+                throw new Exception("Протокол загрузки файла не обнаружен");
             }
-            $protocol = new $protocol($this->file);
-            $protocol->execute();
+            if(!file_exists("/var/www/storage/audio/{$this->file->outputName}")) {
+                $protocol = new $protocolClass($this->file);
+                $protocol->execute();
+            }
         } catch (\Throwable $throwable) {
-            dd($throwable);
-        }
-
-        /*$exception = "empty";
-        try {
-            $this->protocol->execute();
-        } catch (\Throwable $throwable) {
-            $exception = $throwable;
-            Log::error("Message: {$throwable->getMessage()} \n Line: {$throwable->getLine()}");
+            $exception = $throwable->getMessage();
+            $log = sprintf("Message: %s; \n Line: %d; \n File: %s",
+                $throwable->getMessage(),
+                $throwable->getFile(),
+                $throwable->getFile()
+            );
+            Log::error($log);
+            $this->fail($throwable);
         } finally {
-            $file = Files::where([
-                ["name", "=", $this->protocol->getFile()->outputName]
+            if(file_exists("/var/www/storage/audio/{$this->file->outputName}")) {
+                $exception = "empty";
+            }
+            $fileCreate = Files::where([
+                ["name", "=", $this->file->outputName]
             ])->first();
-            if(is_null($file)) {
-                $incomingFile = $this->protocol->getFile();
-                $file = Files::create([
-                    "name" => $incomingFile->outputName,
-                    "connections_id" => $this->protocol->getServer()->getConnectionId(),
+            if(is_null($fileCreate)) {
+                $fileCreate = Files::create([
+                    "name" => $this->file->outputName,
+                    "connections_id" => $this->file->connection_id,
                     "exception" => $exception,
-                    "call_at" => $incomingFile->calldate
-                ]);
-                $this->createCallInfo($incomingFile);
-                CallInfo::create([
-                    "file_id" => $file->id,
-                    "src" => $incomingFile->src,
-                    "dst" => $incomingFile->dst,
-                    "duration" => $incomingFile->duration
+                    "call_at" => $this->file->calldate
                 ]);
             } else {
-                $file->exception = $exception;
-                $file->save();
-                throw $exception;
+                $fileCreate->exception = $exception;
+                $fileCreate->save();
             }
-        }*/
+
+            if($exception === "empty") {
+                CallInfo::create([
+                    "file_id" => $fileCreate->id,
+                    "src" => $this->file->src,
+                    "dst" => $this->file->dst,
+                    "duration" => $this->file->duration
+                ]);
+                $this->createCallInfo();
+            }
+        }
         return 0;
     }
 
-    /**
-     * Создает файл CallInfo
-     * @param File $file
-     */
-    private function createCallInfo(File $file): void
+    private function createCallInfo(): void
     {
         $callInfo = [
-            "service" => $this->type,
-            "calldate" => $file->calldate,
-            "duration" => $file->duration,
-            "src" => $file->src,
-            "dst" => $file->dst,
-            "uniqueid" => $file->uniqueid,
-            "connection_id" => $this->protocol->getServer()->getConnectionId()
+            "service" => $this->file->connection_name,
+            "calldate" => $this->file->calldate,
+            "duration" => $this->file->duration,
+            "src" => $this->file->src,
+            "dst" => $this->file->dst,
+            "uniqueid" => $this->file->uniqueid,
+            "connection_id" => $this->file->connection_id
         ];
-        $name = preg_replace("/\.[a-z0-9]*$/", ".json", $file->outputName);
+        $name = preg_replace("/\.[a-z0-9]*$/", ".json", $this->file->outputName);
         file_put_contents("/var/www/storage/callInfo/$name", json_encode($callInfo, JSON_PRETTY_PRINT));
-    }
-
-    /**
-     * @param string $protocol протокол загрузки файлов App\Services\Downloading\Type
-     * @param string $item сериализованный FileDTO
-     * @param string $connection опции подключения к серверу App\Services\Connections\Options\Server
-     * @throws Connection
-     */
-    private function setProtocol(string $protocol, string $item, string $connection): void
-    {
-        if(!class_exists($protocol)) {
-            throw new Connection("протокол загрузки не найден \n протоколы загрузки расположенны в App\Services\Downloading\Type");
-        }
-        $connection = unserialize($connection);
-        $item = unserialize($item);
-        $this->protocol = new $protocol($connection);
-        if($this->protocol instanceof \App\Services\Downloading\Type\Http) {
-            $this->protocol->setMethod("GET");
-            $this->protocol->setUri($item->file);
-            $this->protocol->setBody([
-                'headers' => [
-                    'Authorization' => 'Basic '.base64_encode($connection->getLogin().':'.$connection->getPass()),
-                ]
-            ]);
-        }
-        $this->protocol->setFile($item);
     }
 }

@@ -11,15 +11,14 @@ abstract class Http extends Protocol
 {
     protected string $method;
     protected string $uri;
-    protected Client $client;
+    protected PendingRequest $client;
 
     public function __construct(protected File $file)
     {
         parent::__construct($file);
-        $this->client = new Client([
+        $this->client = \Illuminate\Support\Facades\Http::withOptions([
             'verify' => false,
             'timeout' => 0,
-            'cookies' => true
         ]);
     }
 }

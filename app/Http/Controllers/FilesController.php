@@ -4,11 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\Connection;
 use App\Models\Files;
-use App\Services\Query\Asterisk as QueryAsterisk;
-use App\Services\Query\Cisco as QueryCisco;
+use App\Services\FacadeConnection;
 use App\Models\Connections;
-use App\Services\Connections\Asterisk;
-use App\Services\Connections\Cisco;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -40,12 +37,11 @@ class FilesController extends Controller
             app('db');
             $info = $this->connections->infoFromConnection($res['connection']);
             $connectionResult = $this->connections->getWorkingConnection($res);
-            $connection = match(strtolower($info['name'])) {
-                "asterisk" => new QueryAsterisk(new Asterisk($info['database_connection'])),
-                "cisco" => new QueryCisco(new Cisco($info['server_connection']))
-            };
-            $connection->setPaginate(0, 100);
-            $connectionResult['files_from_server'] = $connection->getNumbersOfRecords($res['date_from'], $res['date_to']);
+            $queryClass = FacadeConnection::getQueryInstance($info);
+            $connection = FacadeConnection::getConnection($info);
+            $queryContext = FacadeConnection::makeQueryContext($queryClass, $connection);
+            $queryContext->setOptions($res['page'], $res['size']);
+            $connectionResult['files_from_server'] = $queryContext->getNumbersOfRecords($res['date_from'], $res['date_to']);
             $result['data'] = $connectionResult;
         } catch (ValidationException $validationException) {
             $result["status"] = "error";

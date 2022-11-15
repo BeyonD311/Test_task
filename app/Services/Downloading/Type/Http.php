@@ -16,20 +16,23 @@ class Http extends HttpProtocol
     public function execute()
     {
         $path = "/var/www/storage/temp/{$this->file->outputName}";
-        $this->file->file = str_replace("https", "http", $this->file->file);
-        $response = file_get_contents($this->file->file);
-        dd($response);
-       /* if($this->response->getStatusCode() !== 200) {
-            throw new Connection("Ошибка при выполнении запроса; \n Status-code: {$this->response->getStatusCode()}; \n Response: {$this->response->getBody()->getContents()}");
+        $server = $this->file->options['server'];
+        $response = $this->client->send("GET", $this->file->file, [
+            'headers' => [
+                'Authorization' => 'Basic '.base64_encode("$server->login:$server->pass")
+            ]
+        ]);
+        if($response->status() !== 200) {
+            throw new Connection("Ошибка при выполнении запроса; \n Status-code: {$response->status()}; \n Response: {$response->body()}");
         }
-        $status = file_put_contents($path, $this->response->getBody()->getContents());
+        $status = file_put_contents($path, $response->body());
         if($status === false) {
-            throw new Connection("Не удалось загрузить файл $file->outputName \n CallDate {$this->getFile()->calldate}");
+            throw new Connection("Не удалось загрузить файл {$this->file->outputName} \n CallDate {$this->file->calldate}");
         }
         if(file_exists($path)) {
-            copy($path, "/var/www/storage/audio/$file->outputName");
-            $this->getFile()->file = "/var/www/storage/audio/$file->outputName";
+            copy($path, "/var/www/storage/audio/{$this->file->outputName}");
+            $this->file->file = "/var/www/storage/audio/{$this->file->outputName}";
             unlink($path);
-        }*/
+        }
     }
 }
