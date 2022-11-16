@@ -57,12 +57,12 @@ class Asterisk extends Query
      */
     private function crawlingPages(array $where): \Generator
     {
-        $result = [];
         while (true) {
             $items = $this->makeQuery($where);
             if (empty($items)) {
                 break;
             }
+            $result = [];
             /**@var \Illuminate\Pagination\LengthAwarePaginator $items*/
             foreach ($items->items() as $item) {
                 $file = env('ASTERISK_DIR').date('Y/m/d/', strtotime($item->calldate)).$item->recordingfile;
@@ -85,6 +85,7 @@ class Asterisk extends Query
                 $result[] = DtoFactory::getInstance(File::class, $prop);
             }
             yield $result;
+            unset($result);
             $this->paginate['page']++;
         }
     }

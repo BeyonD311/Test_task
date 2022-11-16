@@ -54,6 +54,9 @@ class DownloadJob extends Job
             );
             Log::error($log);
             $this->fail($exception);
+        } finally {
+            gc_collect_cycles();
+            gc_mem_caches();
         }
     }
 
@@ -111,7 +114,7 @@ class DownloadJob extends Job
                 $lastUpdateMS = $calldate;
             }
         }
-        LastUpdate::setLastUpdate($dto->id, date("Y-m-d H:i:s", $lastUpdateMS));
+//        LastUpdate::setLastUpdate($dto->id, date("Y-m-d H:i:s", $lastUpdateMS));
     }
 
     /**

@@ -68,6 +68,7 @@ class DownloadFile extends Job
                 ]);
                 $this->createCallInfo();
             }
+            gc_collect_cycles();
         }
         return 0;
     }

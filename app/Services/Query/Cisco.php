@@ -79,9 +79,9 @@ class Cisco extends Query
         $query = $this->makeQuery($from, $to);
         $query["json"]["pageParameters"]["offset"] = $query["json"]["pageParameters"]["offset"] - 1;
         $query['cookies'] = $this->connection->cookie;
-        $items = [];
         while (true) {
             $response = $clientHttp->send("POST", "queryService/query/getSessions", $query)->json();
+            $items = [];
             if($response['responseCode'] == 2001) {
                 break;
             }
@@ -113,7 +113,7 @@ class Cisco extends Query
             }
             $query["json"]["pageParameters"]["offset"] += $query["json"]["pageParameters"]['limit'];
             yield $items;
-            $items = [];
+            unset($items);
         }
     }
 
