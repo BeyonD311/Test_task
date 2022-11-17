@@ -12,7 +12,7 @@ class DownloadJob extends Job
     protected int $id;
     protected array $options;
     private \DateTimeZone $timeZone;
-    public $timeout = 9999;
+    public $timeout = 10100;
 
     const AUDIO_PATH = "/var/www/storage/audio/";
 

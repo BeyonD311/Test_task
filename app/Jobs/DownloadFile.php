@@ -11,7 +11,7 @@ use \Illuminate\Support\Facades\Log;
 class DownloadFile extends Job
 {
     protected File $file;
-    public $timeout = 9999;
+    public $timeout = 10100;
 
     public function __construct(string $item)
     {
@@ -39,7 +39,6 @@ class DownloadFile extends Job
                 $throwable->getFile()
             );
             Log::error($log);
-            $this->fail($throwable);
         } finally {
             if(file_exists("/var/www/storage/audio/{$this->file->outputName}")) {
                 $exception = "empty";
@@ -68,7 +67,6 @@ class DownloadFile extends Job
                 ]);
                 $this->createCallInfo();
             }
-            gc_collect_cycles();
         }
         return 0;
     }
