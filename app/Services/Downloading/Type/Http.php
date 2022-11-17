@@ -17,15 +17,15 @@ class Http extends HttpProtocol
     {
         $path = "/var/www/storage/temp/{$this->file->outputName}";
         $server = $this->file->options['server'];
-        $response = $this->client->send("GET", $this->file->file, [
+        $response = $this->client->request("GET", $this->file->file, [
             'headers' => [
                 'Authorization' => 'Basic '.base64_encode("$server->login:$server->pass")
             ]
         ]);
-        if($response->status() !== 200) {
-            throw new Connection("Ошибка при выполнении запроса; \n Status-code: {$response->status()}; \n Response: {$response->body()}");
+        if($response->getStatusCode() !== 200) {
+            throw new Connection("Ошибка при выполнении запроса; \n Status-code: {$response->getStatusCode()()}; \n Response: {$response->getBody()->getContents()}");
         }
-        $status = file_put_contents($path, $response->body());
+        $status = file_put_contents($path, $response->getBody()->getContents());
         if($status === false) {
             throw new Connection("Не удалось загрузить файл {$this->file->outputName} \n CallDate {$this->file->calldate}");
         }
