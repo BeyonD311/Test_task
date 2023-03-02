@@ -52,4 +52,5 @@ RUN echo "*/1 * * * * php /var/www/artisan schedule:run >> /var/log/cron.log 2>&
 # Create the log file to be able to run tail
 RUN touch /var/log/cron.log
 
-CMD ["/var/www/docker/php/run.sh"]
+# CMD ["/var/www/docker/php/run.sh"]
+CMD ["php-fpm"]

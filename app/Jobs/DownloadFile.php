@@ -7,17 +7,25 @@ use App\Models\Files;
 use App\Services\DTO\File;
 use Exception;
 use \Illuminate\Support\Facades\Log;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
+use Illuminate\Support\Facades\Cache;
 
-class DownloadFile extends Job
+class DownloadFile extends Job implements ShouldBeUnique
 {
     protected File $file;
     public $timeout = 10100;
 
+    /**
+     * @param string $item
+     */
     public function __construct(string $item)
     {
         $this->file = unserialize($item);
     }
 
+    /**
+     * @return int
+     */
     public function handle()
     {
         $exception = "empty";
@@ -84,5 +92,21 @@ class DownloadFile extends Job
         ];
         $name = preg_replace("/\.[a-z0-9]*$/", ".json", $this->file->outputName);
         file_put_contents("/var/www/storage/callInfo/$name", json_encode($callInfo, JSON_PRETTY_PRINT));
+    }
+
+    /**
+     * @return string
+     */
+    public function uniqueId()
+    {
+        return md5($this->file->outputName);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function uniqueVia()
+    {
+        return Cache::driver('redis');
     }
 }
