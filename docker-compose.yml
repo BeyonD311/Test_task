@@ -41,6 +41,18 @@ services:
             - "6388:6379"
         networks:
             - task
+    swagger-ui:
+        image: swaggerapi/swagger-ui
+        container_name: "swagger-ui"
+        ports:
+            - "8071:8080"
+        volumes:
+            - ./swagger.json:/openapi.json
+        environment:
+            SWAGGER_JSON: /openapi.json
+        networks:
+            - task
+
 networks:
     task:
         driver: bridge
