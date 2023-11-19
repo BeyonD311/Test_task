@@ -1,4 +1,2 @@
-#!/usr/bin/env bash
-composer install
-php /var/www/artisan migrate
+#!/usr/bin/bash
 supervisord -c /etc/supervisor/supervisord.conf

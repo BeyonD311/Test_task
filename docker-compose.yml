@@ -1,28 +1,22 @@
 version: "3.9"
 services:
     php:
-        container_name: connection-php
+        container_name: task-app
         privileged: true
-        user: root
         build:
             context: .
             dockerfile: docker/php/dockerfile
         volumes:
-            - ./:/var/www/
+            - ./app/:/var/www/:rwx
             - ./custom.ini:/usr/local/etc/php/conf.d/custom.ini
             - ./docker/php/supervisor:/etc/supervisor
             - ./docker/php/cron.d:/etc/cron.d
-            - /etc/timezone:/etc/timezone:ro
-            - /etc/localtime:/etc/localtime:ro
-            #- ${PUBLIC_DIR_AUDIO}:/var/www/storage/audio
-            #- ${PUBLIC_DIR_CALL_INFO}:/var/www/storage/callInfo
         depends_on:
-            - db
             - redis
         networks:
-            - connection
+            - task
     nginx:
-        container_name: connection-nginx
+        container_name: task-nginx
         build:
             context: .
             dockerfile: docker/nginx/dockerfile
@@ -33,40 +27,20 @@ services:
         volumes:
             - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
             - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
-            - ./:/var/www
+            - ./app/:/var/www/
         networks:
-            - connection
-    db:
-        container_name: connection-mysql
-        build:
-            context: .
-            dockerfile: docker/mysql/dockerfile
-        ports:
-            - "3319:3306"
-        volumes:
-            - ./mysql-custom-data:/var/lib/mysql
-            - ./docker/mysql/conf.d:/etc/mysql/conf.d/
-        environment:
-            MYSQL_DATABASE: ${DB_DATABASE}
-            MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
-            MYSQL_USER: connection
-            MYSQL_PASSWORD: "qy2to1dN"
-        networks:
-            - connection
+            - task
     redis:
         build:
             context: docker/redis
             dockerfile: dockerfile
-        container_name: connection-redis
+        container_name: task-redis
         volumes:
           - ./redis-data:/opt/redis/data
         ports:
             - "6388:6379"
         networks:
-            - connection
-volumes:
-    dbdata:
-        driver: local
+            - task
 networks:
-    connection:
+    task:
         driver: bridge
